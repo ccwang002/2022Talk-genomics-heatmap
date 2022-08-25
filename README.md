@@ -1,4 +1,4 @@
-# Genomics and Heatmap plotting in R (2022 Talk)
+# Genomic Data Processing and Visualization in R (2022 Talk)
 [![Page build status](https://github.com/ccwang002/2022Talk-genomics-heatmap/actions/workflows/pages/pages-build-deployment/badge.svg)][workflow-status]
 
 [See it in action][gh-pages].
