@@ -14,3 +14,10 @@ Liang-Bo 畢業於聖路易華盛頓大學計算與系統生物學系。博士�
 
 
 ### Outline
+
+
+- Future
+    - Interaction
+        - https://www.nature.com/articles/d41586-022-02191-z
+        - https://onlinelibrary.wiley.com/doi/10.1111/cgf.13727
+        - https://gosling-lang.org/themes/
