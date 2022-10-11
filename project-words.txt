@@ -1,12 +1,16 @@
 ccwang
+CPTAC
 ensembldb
 Fira
 fleqn
+glioblastoma
 highlightjs
+HTAN
 katex
 Liang
 Makeev
 MGMT
 omics
 Sagalaev
+TCGA
 Vadim
