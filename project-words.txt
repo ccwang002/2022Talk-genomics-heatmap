@@ -1,4 +1,12 @@
+ccwang
 ensembldb
+Fira
+fleqn
+highlightjs
+katex
 Liang
+Makeev
 MGMT
 omics
+Sagalaev
+Vadim
