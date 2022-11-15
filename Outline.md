@@ -4,6 +4,8 @@
 
 ### Outline
 
+
+
 https://www.reddit.com/r/biology/comments/x8hcpg/why_do_females_need_two_x_chromosomes_if_one_is/
 - Future
     - Interaction
