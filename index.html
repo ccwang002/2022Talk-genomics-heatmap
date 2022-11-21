@@ -189,7 +189,7 @@
 	<section id="granges-cheatsheet" class="slide">
 		<h2><code>GRanges</code> cheatsheet</h2>
 	<pre class="language-text main-code">
-<code><mark class="important">&gt; gr = exons(EnsDb.Hsapiens.v86); gr
+<code>&gt; gr = exons(EnsDb.Hsapiens.v86); gr
 GRanges object with 748400 ranges and 1 metadata column:
                   seqnames            ranges strand |         exon_id
                      &lt;Rle&gt;         &lt;IRanges&gt;  &lt;Rle&gt; |     &lt;character&gt;
@@ -234,9 +234,9 @@ gr$exon_id</code>
 			<div class="command seqinfo">
 				<em>SeqInfo</em>
 				<pre class="text dense">
-<code>seqlevels(gr)
+<code>seqinfo(gr)
+seqlevels(gr)
 seqlengths(gr)
-genome(gr)
 seqlevelsStyle(gr)</code>
 				</pre>
 			</div>
@@ -260,7 +260,7 @@ seqlevelsStyle(gr)</code>
 			}
 			#granges-cheatsheet .command {
 				position: absolute;
-				padding: 0 0.5em 0.5em;
+				padding: 0 0.5em 0.5em 0.5em;
 				font-size: 1rem;
 				left: 750px;
 				min-width: 10em;
@@ -301,7 +301,7 @@ seqlevelsStyle(gr)</code>
 
 			#granges-cheatsheet .seqinfo.highlight {
 				left: 92px;
-				top: 405px;
+				top: 407px;
 				width: 473px;
 				height: 27px;
 				background: var(--color-seqinfo);
@@ -313,6 +313,123 @@ seqlevelsStyle(gr)</code>
 		</style>
 	</section>
 
+
+	<section id="grangeslist-cheatsheet" class="slide tight">
+		<h2><code>GRangesList</code> cheatsheet</h2>
+		<pre class="language-text main-code">
+<code>&gt; grl = transcriptsBy(EnsDb.Hsapiens.v86, "gene"); grl
+GRangesList object of length 63970:
+$ENSG00000000003
+GRanges object with 5 ranges and 2 metadata columns:
+      seqnames              ranges strand |           tx_id        tx_biotype
+         &lt;Rle&gt;           &lt;IRanges&gt;  &lt;Rle&gt; |     &lt;character&gt;       &lt;character&gt;
+  [1]        X 100627109-100637104      - | ENST00000612152    protein_coding
+  [2]        X 100632063-100637104      - | ENST00000614008    protein_coding
+  [3]        X 100628670-100636806      - | ENST00000373020    protein_coding
+  -------
+  seqinfo: 357 sequences (1 circular) from GRCh38 genome
+
+$ENSG00000000005
+GRanges object with 2 ranges and 2 metadata columns:
+      seqnames              ranges strand |           tx_id        tx_biotype
+         &lt;Rle&gt;           &lt;IRanges&gt;  &lt;Rle&gt; |     &lt;character&gt;       &lt;character&gt;
+  [1]        X 100584802-100599885      + | ENST00000373031    protein_coding
+  -------
+  seqinfo: 357 sequences (1 circular) from GRCh38 genome
+
+...
+&lt;63967 more elements></code>
+		</pre>
+		<p class="citation">Adapted from <a href="http://bioconductor.org/help/course-materials/2015/Uruguay2015/V3-GenomicRanges.html">Genomic Ranges For Genome-Scale Data And Annotation</a>, Martin Morgan (2015)</p>
+		<div class="next">
+			<div class="highlight grangeslist"></div>
+			<div class="command grangeslist">
+				<em>GRangesList</em>
+				<pre class="language-text dense">
+<code>(list of GRanges)
+length(grl)
+grl[1:4]
+shift(grl, 1)
+range(grl)
+unlist(grl)</code>
+				</pre>
+			</div>
+		</div>
+		<div class="next">
+			<div class="highlight granges"></div>
+			<div class="command granges">
+				<em>GRanges</em>
+				<pre class="language-text dense">
+<code>grl[[2]]
+grl[["ENSG00000000005"]]
+grl[, "tx_biotype"]</code>
+				</pre>
+			</div>
+		</div>
+		<style>
+			#grangeslist-cheatsheet {
+				--color-grangeslist: hsla(260, 75%, 45%, 0.1);
+				--color-granges: hsla(183, 87%, 43%, 0.15);
+			}
+			#grangeslist-cheatsheet .main-code :is(pre, code){
+				font-size: 0.75rem;
+				line-height: 1.5;
+			}
+			#grangeslist-cheatsheet .main-code {
+				margin-bottom: 0.5em;
+			}
+
+			#grangeslist-cheatsheet .citation {
+				font-size: 0.8rem;
+				line-height: 1rem;
+				text-align: right;
+			}
+			#grangeslist-cheatsheet .highlight {
+				position: absolute;
+			}
+			#grangeslist-cheatsheet .command {
+				position: absolute;
+				padding: 0 0.5em 0.5em 0.5em;
+				font-size: 1rem;
+				left: 700px;
+				min-width: 11em;
+			}
+			#grangeslist-cheatsheet .command pre {
+				margin: 0 0 0 0.5em;
+				padding: 0px;
+			}
+			#grangeslist-cheatsheet .command pre code {
+				width: 100%;
+				line-height: 1.5;
+				margin: 0px;
+				padding: 0px;
+			}
+
+			#grangeslist-cheatsheet .grangeslist.highlight {
+				left: 90px;
+				top: 145px;
+				width: 580px;
+				height: 380px;
+				background: var(--color-grangeslist);
+			}
+			#grangeslist-cheatsheet .grangeslist.command {
+				top: 145px;
+				background-color: var(--color-grangeslist);
+			}
+
+			#grangeslist-cheatsheet .granges.highlight {
+				left: 90px;
+				top: 340px;
+				width: 580px;
+				height: 130px;
+				background: var(--color-granges);
+			}
+			#grangeslist-cheatsheet .granges.command {
+				top: 340px;
+				background-color: var(--color-granges);
+			}
+		</style>
+	</section>
 
 	<section id="bioconductor-learning-resources" class="slide">
 		<h2>How to learn Bioconductor?</h2>
