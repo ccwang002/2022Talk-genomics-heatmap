@@ -36,9 +36,14 @@
 			content: "Y";
 			color: var(--color-on);
 		}
+
+		pre.dense code {
+			font-size: 0.75rem;
+			line-height: 1.75;
+		}
     </style>
 </head>
-<body class="shower list show-notes">
+<body class="shower list">
 
 	<header class="caption">
 		<h1>Genomic Data Processing and Visualization in R</h1>
@@ -47,7 +52,7 @@
 
 	<menu class="control">
 		<li class="show-notes">
-			<input type="checkbox" id="show-notes-toggle" checked>
+			<input type="checkbox" id="show-notes-toggle">
 			<label for="show-notes-toggle">Slide notes</label>
 		</li>
 	</menu>
@@ -145,6 +150,311 @@
 			src="pictures/my_protrait.jpg"
 			alt="My protrait">
 	</section>
+
+	<div id="quick-intro-genome" class="slide tight">
+		<h2>Background knowledge about genomics</h2>
+		<div class="two columns r40">
+			<ul>
+				<li>Genome (DNA) = source code of our cells</li>
+				<li>DNA encodes RNA encodes proteins; proteins enable certain functions</li>
+				<li>Capture the activity of DNA/RNA/protein/... <br>
+					= know what's going on in a cell</li>
+				<li>High-throughput technologies help us capture cell-wide signals (DNA-seq, RNA-seq, microarray, mass spectrometry, ...)</li>
+			</ul>
+			<figure>
+				<img class="fill w"
+				src="pictures/wikimedia_chromosome.svg"
+				alt="Graphic decomposition of a chromosome (found in the cell nucleus), to the bases pair of the DNA.">
+				<figcaption class="citation right">
+					<a href="https://commons.wikimedia.org/wiki/File:Chromosome_en.svg">Derivative work of KES47</a>,
+					<a href="https://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>,
+					via Wikimedia Commons
+				</figcaption>
+			</figure>
+		</div>
+	</div>
+
+	<section id="bioconductor" class="slide">
+		<h2>R/Bioconductor is a powerful ecosystem for genomic analysis</h2>
+		<ul>
+			<li>Process and calculate genomic ranges</li>
+			<li>Query annotations like genome sequences, genes, and microarray designs</li>
+			<li>Store experiment results with annotations and metadata</li>
+		</ul>
+		<p>Plus R's strong data analysis foundation:<br>
+			Data exploration/processing, visualization and statistics
+		</p>
+	</section>
+
+	<section id="granges-cheatsheet" class="slide">
+		<h2><code>GRanges</code> cheatsheet</h2>
+	<pre class="language-text main-code">
+<code>&gt; gr = exons(EnsDb.Hsapiens.v86); gr
+GRanges object with 748400 ranges and 1 metadata column:
+                  seqnames            ranges strand |         exon_id
+                     &lt;Rle&gt;         &lt;IRanges&gt;  &lt;Rle&gt; |     &lt;character&gt;
+  ENSE00002234944        1       11869-12227      + | ENSE00002234944
+  ENSE00001948541        1       12010-12057      + | ENSE00001948541
+  ENSE00001671638        1       12179-12227      + | ENSE00001671638
+              ...      ...               ...    ... .             ...
+  ENSE00001638296        Y 26633345-26633431      - | ENSE00001638296
+  ENSE00001797328        Y 26634523-26634652      - | ENSE00001797328
+  ENSE00001794473        Y 56855244-56855488      + | ENSE00001794473
+-------
+seqinfo: 357 sequences (1 circular) from GRCh38 genome</code>
+		</pre>
+		<p class="citation">Adapted from <a href="http://bioconductor.org/help/course-materials/2015/Uruguay2015/V3-GenomicRanges.html">Genomic Ranges For Genome-Scale Data And Annotation</a>, Martin Morgan (2015)</p>
+		<div class="next">
+			<div class="highlight granges"></div>
+			<div class="command granges">
+				<em>GRanges</em>
+				<pre class="text dense">
+<code>length(gr)
+gr[1:5]; names(gr)
+seqnames(gr)
+start(gr)
+end(gr)
+width(gr)
+strand(gr)</code>
+				</pre>
+			</div>
+		</div>
+		<div class="next">
+			<div class="highlight dataframe"></div>
+			<div class="command dataframe">
+				<em>DataFrame</em>
+				<pre class="text dense">
+<code>mcols(gr)
+gr$exon_id</code>
+				</pre>
+			</div>
+		</div>
+		<div class="next">
+			<div class="highlight seqinfo"></div>
+			<div class="command seqinfo">
+				<em>SeqInfo</em>
+				<pre class="text dense">
+<code>seqinfo(gr)
+seqlevels(gr)
+seqlengths(gr)
+seqlevelsStyle(gr)</code>
+				</pre>
+			</div>
+		</div>
+		<style>
+			#granges-cheatsheet {
+				--color-granges: hsla(183, 87%, 43%, 0.15);
+				--color-dataframe: hsla(35, 87%, 43%, 0.15);
+				--color-seqinfo: hsla(208, 87%, 43%, 0.15);
+			}
+			#granges-cheatsheet .main-code :is(pre, code){
+				font-size: 0.875rem;
+				line-height: 1.5;
+			}
+			#granges-cheatsheet .citation {
+				font-size: 0.8rem;
+				line-height: 1rem;
+			}
+			#granges-cheatsheet .highlight {
+				position: absolute;
+			}
+			#granges-cheatsheet .command {
+				position: absolute;
+				padding: 0 0.5em 0.5em 0.5em;
+				font-size: 1rem;
+				left: 750px;
+				min-width: 10em;
+			}
+			#granges-cheatsheet .command pre {
+				margin: 0 0 0 0.5em;
+				padding: 0px;
+			}
+			#granges-cheatsheet .command pre code {
+				width: 100%;
+				line-height: 1.5;
+				margin: 0px;
+				padding: 0px;
+			}
+			#granges-cheatsheet .granges.highlight {
+				left: 245px;
+				top: 200px;
+				width: 295px;
+				height: 190px;
+				background: var(--color-granges);
+			}
+			#granges-cheatsheet .granges.command {
+				top: 120px;
+				background-color: var(--color-granges);
+			}
+
+			#granges-cheatsheet .dataframe.highlight {
+				left: 555px;
+				top: 200px;
+				width: 140px;
+				height: 190px;
+				background: var(--color-dataframe);
+			}
+			#granges-cheatsheet .dataframe.command {
+				top: 295px;
+				background-color: var(--color-dataframe);
+			}
+
+			#granges-cheatsheet .seqinfo.highlight {
+				left: 92px;
+				top: 407px;
+				width: 473px;
+				height: 27px;
+				background: var(--color-seqinfo);
+			}
+			#granges-cheatsheet .seqinfo.command {
+				top: 380px;
+				background-color: var(--color-seqinfo);
+			}
+		</style>
+	</section>
+
+
+	<section id="grangeslist-cheatsheet" class="slide tight">
+		<h2><code>GRangesList</code> cheatsheet</h2>
+		<pre class="language-text main-code">
+<code>&gt; grl = transcriptsBy(EnsDb.Hsapiens.v86, "gene"); grl
+GRangesList object of length 63970:
+$ENSG00000000003
+GRanges object with 5 ranges and 2 metadata columns:
+      seqnames              ranges strand |           tx_id        tx_biotype
+         &lt;Rle&gt;           &lt;IRanges&gt;  &lt;Rle&gt; |     &lt;character&gt;       &lt;character&gt;
+  [1]        X 100627109-100637104      - | ENST00000612152    protein_coding
+  [2]        X 100632063-100637104      - | ENST00000614008    protein_coding
+  [3]        X 100628670-100636806      - | ENST00000373020    protein_coding
+  -------
+  seqinfo: 357 sequences (1 circular) from GRCh38 genome
+
+$ENSG00000000005
+GRanges object with 2 ranges and 2 metadata columns:
+      seqnames              ranges strand |           tx_id        tx_biotype
+         &lt;Rle&gt;           &lt;IRanges&gt;  &lt;Rle&gt; |     &lt;character&gt;       &lt;character&gt;
+  [1]        X 100584802-100599885      + | ENST00000373031    protein_coding
+  -------
+  seqinfo: 357 sequences (1 circular) from GRCh38 genome
+
+...
+&lt;63967 more elements></code>
+		</pre>
+		<p class="citation">Adapted from <a href="http://bioconductor.org/help/course-materials/2015/Uruguay2015/V3-GenomicRanges.html">Genomic Ranges For Genome-Scale Data And Annotation</a>, Martin Morgan (2015)</p>
+		<div class="next">
+			<div class="highlight grangeslist"></div>
+			<div class="command grangeslist">
+				<em>GRangesList</em>
+				<pre class="language-text dense">
+<code>(list of GRanges)
+length(grl)
+grl[1:4]
+shift(grl, 1)
+range(grl)
+unlist(grl)</code>
+				</pre>
+			</div>
+		</div>
+		<div class="next">
+			<div class="highlight granges"></div>
+			<div class="command granges">
+				<em>GRanges</em>
+				<pre class="language-text dense">
+<code>grl[[2]]
+grl[["ENSG00000000005"]]
+grl[, "tx_biotype"]</code>
+				</pre>
+			</div>
+		</div>
+		<style>
+			#grangeslist-cheatsheet {
+				--color-grangeslist: hsla(260, 75%, 45%, 0.1);
+				--color-granges: hsla(183, 87%, 43%, 0.15);
+			}
+			#grangeslist-cheatsheet .main-code :is(pre, code){
+				font-size: 0.75rem;
+				line-height: 1.5;
+			}
+			#grangeslist-cheatsheet .main-code {
+				margin-bottom: 0.5em;
+			}
+
+			#grangeslist-cheatsheet .citation {
+				font-size: 0.8rem;
+				line-height: 1rem;
+				text-align: right;
+			}
+			#grangeslist-cheatsheet .highlight {
+				position: absolute;
+			}
+			#grangeslist-cheatsheet .command {
+				position: absolute;
+				padding: 0 0.5em 0.5em 0.5em;
+				font-size: 1rem;
+				left: 700px;
+				min-width: 11em;
+			}
+			#grangeslist-cheatsheet .command pre {
+				margin: 0 0 0 0.5em;
+				padding: 0px;
+			}
+			#grangeslist-cheatsheet .command pre code {
+				width: 100%;
+				line-height: 1.5;
+				margin: 0px;
+				padding: 0px;
+			}
+
+			#grangeslist-cheatsheet .grangeslist.highlight {
+				left: 90px;
+				top: 145px;
+				width: 580px;
+				height: 380px;
+				background: var(--color-grangeslist);
+			}
+			#grangeslist-cheatsheet .grangeslist.command {
+				top: 145px;
+				background-color: var(--color-grangeslist);
+			}
+
+			#grangeslist-cheatsheet .granges.highlight {
+				left: 90px;
+				top: 340px;
+				width: 580px;
+				height: 130px;
+				background: var(--color-granges);
+			}
+			#grangeslist-cheatsheet .granges.command {
+				top: 340px;
+				background-color: var(--color-granges);
+			}
+		</style>
+	</section>
+
+	<section id="bioconductor-learning-resources" class="slide">
+		<h2>How to learn Bioconductor?</h2>
+	</section>
+
+	<section id="tidyverse-integration" class="slide">
+		<h2>Integration to tidyverse</h2>
+		plyranges
+	</section>
+
+	<div id="x-inactivation" class="slide two columns r33">
+		<div>
+			<h2>X-inactivation</h2>
+		</div>
+		<figure>
+			<img class="fill w"
+				src="pictures/wikimedia_a_calico_cat.jpg"
+				alt="A calico cat sitting on an indoor porch">
+			<figcaption class="citation">
+				<a href="https://commons.wikimedia.org/wiki/File:A_Calico_cat.jpg">Ellisn95</a>,
+				<a href="https://creativecommons.org/licenses/by-sa/4.0">CC BY-SA 4.0</a>,
+				via Wikimedia Commons
+			</figcaption>
+		</figure>
+	</div>
 
 	<div class="progress"></div>
 
