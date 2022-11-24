@@ -151,6 +151,10 @@
 			alt="My protrait">
 	</section>
 
+	<section id="talk-goal" class="slide">
+		<h2>Today's goal</h2>
+	</section>
+
 	<div id="quick-intro-genome" class="slide tight">
 		<h2>Background knowledge about genomics</h2>
 		<div class="two columns r40">
@@ -313,7 +317,6 @@ seqlevelsStyle(gr)</code>
 		</style>
 	</section>
 
-
 	<section id="grangeslist-cheatsheet" class="slide tight">
 		<h2><code>GRangesList</code> cheatsheet</h2>
 		<pre class="language-text main-code">
@@ -431,14 +434,54 @@ grl[, "tx_biotype"]</code>
 		</style>
 	</section>
 
-	<section id="bioconductor-learning-resources" class="slide">
-		<h2>How to learn Bioconductor?</h2>
+	<section id="summarizedexperiment-cheatsheet" class="slide">
+		<h2><code>SummarizedExperiment</code> cheatsheet</h2>
+		<div class="columns two">
+			<figure>
+				<img class="fill w" src="pictures/summarizedexperiment_overview.svg" alt="">
+				<figcaption class="citation">
+					Ref: <a href="https://bioconductor.org/packages/release/bioc/vignettes/SummarizedExperiment/inst/doc/SummarizedExperiment.html">SummarizedExperiment's vignette</a>
+				</figcaption>
+			</figure>
+			<ul>
+				<li>A SummarizedExperiment object keeps the data and metadata (both samples and features) together</li>
+				<li>Useful for organizing -omics data</li>
+				<li>Export/Reload the object as a RDS file</li>
+			</ul>
+		</div>
+		<style>
+			#summarizedexperiment-cheatsheet h2 {
+				font-size: 2.75rem;
+			}
+			#summarizedexperiment-cheatsheet ul {
+				align-self: center;
+				margin-bottom: 0;
+			}
+		</style>
 	</section>
 
 	<section id="tidyverse-integration" class="slide">
 		<h2>Integration to tidyverse</h2>
 		plyranges
 	</section>
+
+	<section id="purrr" class="slide">
+		<h2>purrr</h2>
+	</section>
+
+	<section id="data-frame-comparison" class="slide">
+		<h2>Data.frame, tibble, or DataFrame?</h2>
+		as_tibble(rownames="my_row_name")
+	</section>
+
+	<section id="subset-or-filter" class="slide">
+		<h2>filter vs subset</h2>
+	</section>
+
+	<section id="bioconductor-learning-resources" class="slide">
+		<h2>How to learn Bioconductor?</h2>
+	</section>
+
 
 	<div id="x-inactivation" class="slide two columns r33">
 		<div>
