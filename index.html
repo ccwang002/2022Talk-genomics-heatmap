@@ -52,6 +52,26 @@
 			right: 1rem;
 		}
 
+		.slide .citation {
+			font-size: 0.8rem;
+			line-height: 1rem;
+		}
+
+		.slide .citation.left {
+ 			text-align: left;
+		}
+
+		.slide .citation.right {
+  	  		text-align: right;
+		}
+
+		.slide .citation.center {
+    		text-align: center;
+		}
+
+		.slide .citation {
+    		margin: 0;
+		}
     </style>
 </head>
 <body class="shower list">
@@ -184,13 +204,14 @@
 	</section>
 
 	<section id="bioconductor" class="slide">
-		<h2>R/Bioconductor is a powerful ecosystem for genomic analysis</h2>
+		<h2><strong>R/Bioconductor</strong> is a powerful ecosystem for genomic analysis</h2>
 		<ul>
-			<li>Process and calculate genomic ranges</li>
-			<li>Query annotations like genome sequences, genes, and microarray designs</li>
-			<li>Store experiment results together with annotations and metadata</li>
+			<li>Process and calculate <strong>genomic ranges</strong></li>
+			<li><strong>Query annotations</strong> like genome sequences, genes, and microarray designs</li>
+			<li><strong>Store experiment results</strong> together with annotations and metadata</li>
+			<li>Install <a href="https://bioconductor.org/">Bioconductor</a> and its packages by <code>BiocManager::install()</code></li>
 		</ul>
-		<p>Plus R's strong data analysis foundation:<br>
+		<p>Even better with R's strong data analysis foundation:<br>
 			Data exploration/processing, visualization and statistics
 		</p>
 	</section>
@@ -200,7 +221,7 @@
 		<div class="two columns l67">
 			<ol>
 				<li>Understand the basic data structures for genomics (<code>GenomicRanges</code>: <code>GRanges</code> and <code>GRangesList</code>)</li>
-				<li>Query gene annotations (<code>ensembldb</code>)</li>
+				<li>Query genome annotations (<code>ensembldb</code>)</li>
 				<li>Store experiment results (<code>SummarizedExperiment</code>)</li>
 				<li>Plot heatmap visualizations (<code>ComplexHeatmap</code>)</li>
 				<li>A demo for data exploration and analysis</li>
@@ -536,27 +557,141 @@ methods(class="GRanges")  # List all available methods</code>
 		<a href="https://blog.liang2.tw/posts/2019/02/gdc-seqinfo/">my blog post</a> to create a Seqinfo object from a genome <code>.dict</code> file.
 	</section>
 
+	<section id="ensembldb" class="slide">
+		<h2>Query genome annotations by <code>ensembldb</code></h2>
+		<ul>
+			<li>Find the location of a genomic feature</li>
+			<li>ID conversion (gene ↔ transcript ↔ protein)</li>
+			<li>Fix a certain version of the annotation for a project</li>
+			<li>
+				<a href="https://bioconductor.org/packages/release/bioc/html/ensembldb.html">ensembldb</a>
+				provides a local copy of <a href="https://ensembl.org/">Ensembl</a> genome annotations (EnsDb.*)
+			</li>
+			<li>
+				All EnsDb objects (different versions and species) are available on
+				<a href="https://bioconductor.org/packages/release/bioc/html/AnnotationHub.html">AnnotationHub</a>.
+				For example, Ensembl release 102 (GENCODE 36) for human is available as <a href="https://annotationhub.bioconductor.org/ahid/AH89180"><code>AH89180</code></a> on AnnotationHub.
+			</li>
+		</ul>
+		<img class="place top right biocsticker"
+			src="pictures/ensembldb_BiocSticker.png"
+			alt="Hexagon sticker for the Bioconductor package ensembldb">
+		<style>
+			#ensembldb h2 {
+				font-size: 2.5rem;
+			}
+		</style>
+	</section>
+
+	<section id="ensembldb-usage" class="slide tight">
+		<p>Example: Find all the protein coding genes in autosomes</p>
+		<pre class="language-r dense">
+<code>library(EnsDb.Hsapiens.v86)
+my_filter = AnnotationFilter(~ gene_biotype == "protein_coding" & seq_name %in% 1:22)
+genes(EnsDb.Hsapiens.v86, filter = my_filter) |>
+    sortSeqlevels() |>  # Sort the chromosomes in natural order (1...22, X, Y, MT)
+    sort(ignore.strand=TRUE)  # Sort the genes by on their genomic locations
+# GRanges object with 19025 ranges and 2 metadata columns:
+#                   seqnames            ranges strand |   gene_name   gene_biotype
+#                      &lt;Rle&gt;         &lt;IRanges&gt;  &lt;Rle&gt; | &lt;character&gt;    &lt;character&gt;
+#   ENSG00000186092        1       69091-70008      + |       OR4F5 protein_coding
+#   ENSG00000279928        1     182393-184158      + |  FO538757.2 protein_coding
+#   ENSG00000279457        1     184923-200322      - |  FO538757.1 protein_coding
+#               ...      ...               ...    ... .         ...            ...
+#   ENSG00000251322       22 50674415-50733298      + |      SHANK3 protein_coding
+#   ENSG00000100312       22 50738196-50745334      + |         ACR protein_coding
+#   ENSG00000079974       22 50767501-50783663      - |      RABL2B protein_coding
+#   -------
+#   seqinfo: 22 sequences from GRCh38 genome</code>
+		</pre>
+		<style>
+			#ensembldb-usage p:first-of-type {
+				margin-bottom: 0.5em;
+			}
+			#ensembldb-usage pre code {
+				font-size: 0.875rem;
+			}
+		</style>
+	</section>
+
+	<section id="other-annotations" class="slide tight">
+		<h2>Other annotations in R/Bioconductor</h2>
+		<table class="striped">
+		<thead>
+			<tr>
+				<th>Object type</th>
+				<th>Example packages</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<th role="row">EnsDb</th>
+				<td>
+					<a href="https://bioconductor.org/packages/EnsDb.Hsapiens.v86/">EnsDb.Hsapiens.v86</a>
+					(TxDb compatible)
+				</td>
+			</tr>
+			<tr>
+				<th role="row">TxDb</th>
+				<td>
+					<a href="http://bioconductor.org/packages/TxDb.Hsapiens.UCSC.hg38.knownGene/">TxDb.Hsapiens.UCSC.hg38.knownGene</a>
+				</td>
+			</tr>
+			<tr>
+				<th role="row">BSgenome</th>
+				<td>
+					<a href="http://bioconductor.org/packages/BSgenome.Hsapiens.UCSC.hg38/">BSgenome.Hsapiens.UCSC.hg38</a>
+					(genome sequence)
+				</td>
+			</tr>
+			<tr>
+				<th role="row"><em>Other</em></th>
+				<td>
+					<a href="http://bioconductor.org/packages/org.Hs.eg.db/">org.Hs.eg.db</a> (organism),
+					<a href="http://bioconductor.org/packages/GO.db/">GO.db</a> (system biology), ...
+				</td>
+			</tr>
+			<tr>
+				<th role="row"><em>More at</em></th>
+				<td>
+					<a href="https://bioconductor.org/packages/release/bioc/html/AnnotationDbi.html">AnnotationDbi</a>,
+					<a href="https://bioconductor.org/packages/release/bioc/html/GenomicFeatures.html">GenomicFeatures</a>,
+					<a href="http://bioconductor.org/packages/biomaRt/">biomaRt</a> (web based),<br>
+					<a href="http://bioconductor.org/packages/AnnotationHub/">AnnotationHub</a>,
+					all packages under <a href="https://bioconductor.org/packages/release/BiocViews.html#___AnnotationData">AnnotationData</a>
+				</td>
+			</tr>
+		</tbody>
+		</table>
+		<p class="citation right">
+			Also check out Bioconductor's annotation workflow: <a href="https://bioconductor.org/packages/release/workflows/vignettes/annotation/inst/doc/Annotation_Resources.html">Genomic Annotation Resources</a>.
+		</p>
+	</section>
+
 	<section id="summarizedexperiment-cheatsheet" class="slide">
 		<h2><code>SummarizedExperiment</code> cheatsheet</h2>
 		<div class="columns two">
-			<figure>
-				<img class="fill w" src="pictures/summarizedexperiment_overview.svg" alt="">
-				<figcaption class="citation">
-					Source: <a href="https://bioconductor.org/packages/release/bioc/vignettes/SummarizedExperiment/inst/doc/SummarizedExperiment.html">SummarizedExperiment's vignette</a>
-				</figcaption>
-			</figure>
 			<ul>
-				<li>A SummarizedExperiment object keeps the data and metadata (both samples and features) together</li>
+				<li>An object to keep the data of a cohort and the related metadata (both samples and features) together</li>
 				<li>Useful for organizing -omics data</li>
 				<li>Export/Reload the object as a RDS file</li>
 			</ul>
+			<figure>
+				<img class="fill w" src="pictures/summarizedexperiment_overview.svg" alt="">
+				<figcaption class="citation right">
+					Source: <a href="https://bioconductor.org/packages/release/bioc/vignettes/SummarizedExperiment/inst/doc/SummarizedExperiment.html">SummarizedExperiment's vignette</a>
+				</figcaption>
+			</figure>
 		</div>
+		<img class="place top right biocsticker"
+			src="pictures/SummarizedExperiment_BiocSticker.png"
+			alt="Hexagon sticker for the Bioconductor package SummarizedExperiment">
 		<style>
 			#summarizedexperiment-cheatsheet h2 {
-				font-size: 2.75rem;
+				font-size: 2.5rem;
 			}
 			#summarizedexperiment-cheatsheet ul {
-				align-self: center;
+				/* align-self: center; */
 				margin-bottom: 0;
 			}
 		</style>
