@@ -41,6 +41,17 @@
 			font-size: 0.75rem;
 			line-height: 1.75;
 		}
+
+		.slide pre code {
+			font-weight: 450;
+		}
+
+		.place.top.right.biocsticker {
+			width: 120px;
+			top: 1rem;
+			right: 1rem;
+		}
+
     </style>
 </head>
 <body class="shower list">
@@ -135,14 +146,12 @@
 			<ul>
 				<li>PhD in Computational and Systems Biology<br>
 					from Washington University in St. Louis</li>
-				<li>My thesis focuses on cancer genomics</li>
+				<li>Thesis research: cancer proteogenomics (analysis and tool/pipeline development)</li>
 				<li>Worked in related consortia including
 					<a href="https://proteomics.cancer.gov/programs/cptac">CPTAC</a>,
 					<a href="https://www.cancer.gov/about-nci/organization/ccg/research/structural-genomics/tcga">TCGA</a>,
-					and <a href="https://humantumoratlas.org/">HTAN</a>
-					with thousands of samples
+					and <a href="https://humantumoratlas.org/">HTAN</a> with thousands of samples
 				</li>
-				<li>Led the data analysis of the <a href="https://doi.org/10.1016/j.ccell.2021.01.006">CPTAC Glioblastoma study</a></li>
 			</ul>
 		</div>
 		<img
@@ -151,48 +160,97 @@
 			alt="My protrait">
 	</section>
 
-	<section id="talk-goal" class="slide">
-		<h2>Today's goal</h2>
-	</section>
-
-	<div id="quick-intro-genome" class="slide tight">
+	<section id="quick-intro-genome" class="slide">
 		<h2>Background knowledge about genomics</h2>
 		<div class="two columns r40">
 			<ul>
 				<li>Genome (DNA) = source code of our cells</li>
-				<li>DNA encodes RNA encodes proteins; proteins enable certain functions</li>
-				<li>Capture the activity of DNA/RNA/protein/... <br>
-					= know what's going on in a cell</li>
-				<li>High-throughput technologies help us capture cell-wide signals (DNA-seq, RNA-seq, microarray, mass spectrometry, ...)</li>
+				<li>If we measure DNA/RNA/protein/...,<br>
+					we know what's going on in a cell (?)</li>
+				<li>High-throughput technologies enable us to capture cell-wide/genome-wide signals<br>
+					(DNA-seq, RNA-seq, microarray, mass spectrometry, imaging, ...)</li>
 			</ul>
 			<figure>
 				<img class="fill w"
 				src="pictures/wikimedia_chromosome.svg"
 				alt="Graphic decomposition of a chromosome (found in the cell nucleus), to the bases pair of the DNA.">
 				<figcaption class="citation right">
-					<a href="https://commons.wikimedia.org/wiki/File:Chromosome_en.svg">Derivative work of KES47</a>,
+					<a href="https://commons.wikimedia.org/wiki/File:Chromosome_en.svg">KES47</a>,
 					<a href="https://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>,
 					via Wikimedia Commons
 				</figcaption>
 			</figure>
 		</div>
-	</div>
+	</section>
 
 	<section id="bioconductor" class="slide">
 		<h2>R/Bioconductor is a powerful ecosystem for genomic analysis</h2>
 		<ul>
 			<li>Process and calculate genomic ranges</li>
 			<li>Query annotations like genome sequences, genes, and microarray designs</li>
-			<li>Store experiment results with annotations and metadata</li>
+			<li>Store experiment results together with annotations and metadata</li>
 		</ul>
 		<p>Plus R's strong data analysis foundation:<br>
 			Data exploration/processing, visualization and statistics
 		</p>
 	</section>
 
+	<section id="talk-goal" class="slide">
+		<h2>Today's goal</h2>
+		<div class="two columns l67">
+			<ol>
+				<li>Understand the basic data structures for genomics (<code>GenomicRanges</code>: <code>GRanges</code> and <code>GRangesList</code>)</li>
+				<li>Query gene annotations (<code>ensembldb</code>)</li>
+				<li>Store experiment results (<code>SummarizedExperiment</code>)</li>
+				<li>Plot heatmap visualizations (<code>ComplexHeatmap</code>)</li>
+				<li>A demo for data exploration and analysis</li>
+				<li>Challenges for future multi-omics data analysis</li>
+			</ol>
+			<figure>
+				<img
+				class="fill w"
+				src="pictures/genomic_analysis_rocks_DALL·E.png"
+				alt="Illustration of a rocket in the shape of a DNA helix traveling in space. DALL·E generated art.">
+			</figure>
+		</div>
+		<style>
+			#talk-goal .columns {
+				grid-column-gap: 1rem;
+			}
+			#talk-goal code {
+				font-size: 0.8em;
+			}
+		</style>
+	</section>
+
+	<section class="slide-notes">
+		<p>This talk assumes the reader has the basic understanding of:</p>
+		<ul>
+			<li>tidyverse packages (readr, dplyr, purrr, ggplot2)</li>
+			<li>grid graphics</li>
+		</ul>
+	</section>
+
+	<section id="genomicsranges-overview" class="slide">
+		<h2><code>GenomicRanges</code> overview</h2>
+		<ul>
+			<li>How to specify a location on genome?
+				A coorindate range of a chromosome on a genome reference,
+				like chr1:100–150:- on hg38 (reverse strand)
+			</li>
+			<li>Coordinate system: 1-based, closed interval, strand aware, left-most (start <= end)</li>
+			<li><a href="https://bioconductor.org/packages/release/bioc/html/GenomicRanges.html">GenomicRanges</a> package provides <code>GRanges</code> and <code>GRangesList</code></li>
+			<li>The building blocks for essentially all other genomic packages</li>
+			<li>Check out <a href="https://bioconductor.org/packages/release/bioc/vignettes/GenomicRanges/inst/doc/GenomicRangesIntroduction.html">its vignettes</a> and <a href="https://bioconductor.org/help/course-materials/2015/Uruguay2015/V3-GenomicRanges.html">this tutorial in 2015</a> for an in-depth walkthrough</li>
+		</ul>
+		<img class="place top right biocsticker"
+			src="pictures/GenomicRanges_BiocSticker.png"
+			alt="Hexagon sticker for the Bioconductor package GenomicRanges">
+	</section>
+
 	<section id="granges-cheatsheet" class="slide">
 		<h2><code>GRanges</code> cheatsheet</h2>
-	<pre class="language-text main-code">
+		<pre class="language-text main-code">
 <code>&gt; gr = exons(EnsDb.Hsapiens.v86); gr
 GRanges object with 748400 ranges and 1 metadata column:
                   seqnames            ranges strand |         exon_id
@@ -236,7 +294,7 @@ gr$exon_id</code>
 		<div class="next">
 			<div class="highlight seqinfo"></div>
 			<div class="command seqinfo">
-				<em>SeqInfo</em>
+				<em>Seqinfo</em>
 				<pre class="text dense">
 <code>seqinfo(gr)
 seqlevels(gr)
@@ -434,13 +492,57 @@ grl[, "tx_biotype"]</code>
 		</style>
 	</section>
 
+	<section id="genomicranges-other-ways" class="slide">
+		<h2>Other ways to construct a GRanges object</h2>
+		<ul>
+			<li>From a data frame: <code>makeGRangesFromDataFrame</code></li>
+			<li>From external files (BED, GTF, and etc): use <a href="https://bioconductor.org/packages/release/bioc/html/rtracklayer.html">rtracklayer</a> package</li>
+		</ul>
+		<p>Good practice: always provide/verify the correct genome information<br>
+			(<code>Seqinfo</code> object from <a href="https://bioconductor.org/packages/release/bioc/html/GenomeInfoDb.html">GenomeInfoDb</a> package)</p>
+	</section>
+
+	<section id="genomicranges-methods" class="slide tight">
+		<h2>GenomicRanges provides many methods to manipulate the ranges</h2>
+		<pre class="language-r dense">
+<code># All methods are strand aware
+?"intra-range-methods"    # Methods applied to every range independently
+shift(), narrow(), flank(), promoters(), resize(), ...
+
+?"inter-range-methods"    # Methods applied across all ranges at once
+range(), reduce(), gaps(), disjoin(), coverage(), ...
+
+?"findOverlaps-methods"   # Find overlaps between two ranges
+findOverlaps(), countOverlaps(), %over%, %within%, %outside%, ...
+
+methods(class="GRanges")  # List all available methods</code>
+		</pre>
+		<p>More on <a href="http://bioconductor.org/help/course-materials/2015/Uruguay2015/V3-GenomicRanges.html">Genomic Ranges For Genome-Scale Data And Annotation</a>, Martin Morgan (2015)</p>
+		<style>
+			#genomicranges-methods pre.dense code {
+				font-size: 1rem;
+				line-height: 1.75;
+			}
+			#genomicranges-methods p {
+				font-size: 1rem;
+				text-align: right;
+			}
+		</style>
+	</section>
+
+	<section class="slide-notes">
+		GenomeInfoDb is a powerful package for genome information
+
+		<a href="https://blog.liang2.tw/posts/2019/02/gdc-seqinfo/">my blog post</a> to create a Seqinfo object from a genome <code>.dict</code> file.
+	</section>
+
 	<section id="summarizedexperiment-cheatsheet" class="slide">
 		<h2><code>SummarizedExperiment</code> cheatsheet</h2>
 		<div class="columns two">
 			<figure>
 				<img class="fill w" src="pictures/summarizedexperiment_overview.svg" alt="">
 				<figcaption class="citation">
-					Ref: <a href="https://bioconductor.org/packages/release/bioc/vignettes/SummarizedExperiment/inst/doc/SummarizedExperiment.html">SummarizedExperiment's vignette</a>
+					Source: <a href="https://bioconductor.org/packages/release/bioc/vignettes/SummarizedExperiment/inst/doc/SummarizedExperiment.html">SummarizedExperiment's vignette</a>
 				</figcaption>
 			</figure>
 			<ul>
@@ -481,7 +583,6 @@ grl[, "tx_biotype"]</code>
 	<section id="bioconductor-learning-resources" class="slide">
 		<h2>How to learn Bioconductor?</h2>
 	</section>
-
 
 	<div id="x-inactivation" class="slide two columns r33">
 		<div>

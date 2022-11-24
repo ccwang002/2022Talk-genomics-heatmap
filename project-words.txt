@@ -1,6 +1,9 @@
 ccwang
 CPTAC
+DALL
 Ellisn
+dplyr
+ggplot2
 ENSE
 ensembldb
 ENSG
@@ -18,7 +21,9 @@ mcols
 methylation
 MGMT
 omics
+proteogenomics
 purrr
+readr
 Sagalaev
 TCGA
 tibble
