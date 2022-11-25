@@ -38,7 +38,7 @@
 		}
 
 		pre.dense code {
-			font-size: 0.75rem;
+			font-size: 0.875rem;
 			line-height: 1.75;
 		}
 
@@ -204,16 +204,18 @@
 	</section>
 
 	<section id="bioconductor" class="slide">
-		<h2><strong>R/Bioconductor</strong> is a powerful ecosystem for genomic analysis</h2>
+		<h2><strong>R/Bioconductor</strong>: a powerful ecosystem for genomic analysis</h2>
 		<ul>
 			<li>Process and calculate <strong>genomic ranges</strong></li>
 			<li><strong>Query annotations</strong> like genome sequences, genes, and microarray designs</li>
 			<li><strong>Store experiment results</strong> together with annotations and metadata</li>
-			<li>Install <a href="https://bioconductor.org/">Bioconductor</a> and its packages by <code>BiocManager::install()</code></li>
+			<li>Even better with R's strong data analysis foundation</li>
 		</ul>
-		<p>Even better with R's strong data analysis foundation:<br>
-			Data exploration/processing, visualization and statistics
+		<p>Install <a href="https://bioconductor.org/">Bioconductor</a> and its packages by <code>BiocManager::install()</code>
 		</p>
+		<img class="place top right biocsticker"
+			src="pictures/Bioconductor_BiocSticker.png"
+			alt="Hexagon sticker for Bioconductor">
 	</section>
 
 	<section id="talk-goal" class="slide">
@@ -669,11 +671,19 @@ genes(EnsDb.Hsapiens.v86, filter = my_filter) |>
 	<section id="summarizedexperiment-cheatsheet" class="slide">
 		<h2><code>SummarizedExperiment</code> cheatsheet</h2>
 		<div class="columns two">
-			<ul>
-				<li>An object to keep the data of a cohort and the related metadata (both samples and features) together</li>
-				<li>Useful for organizing -omics data</li>
-				<li>Export/Reload the object as a RDS file</li>
-			</ul>
+			<div>
+				<ul>
+					<li>An object to keep the data of a cohort and the related metadata (both samples and features) together</li>
+					<li>Useful for organizing -omics data</li>
+					<li>Export/Reload the object as a RDS file</li>
+				</ul>
+				<pre class="language-r dense">
+<code>se = SummarizedExperiment(...)
+se |> saveRDS("my_se.rds")
+se = readRDS("my_se.rds")
+</code>
+				</pre>
+			</div>
 			<figure>
 				<img class="fill w" src="pictures/summarizedexperiment_overview.svg" alt="">
 				<figcaption class="citation right">
@@ -695,26 +705,69 @@ genes(EnsDb.Hsapiens.v86, filter = my_filter) |>
 		</style>
 	</section>
 
-	<section id="tidyverse-integration" class="slide">
-		<h2>Integration to tidyverse</h2>
-		plyranges
+	<section id="with-tidyverse" class="slide">
+	<h2>Bioconductor + tidyverse</h2>
+		<ul>
+			<li>I find <a href="https://www.tidyverse.org/">tidyverse</a>'s verbs easy to learn and use, personally</li>
+			<li>Bioconductor and tidyverse are two <em>separate</em> ecosystems</li>
+			<li>Function overrides are common (e.g. <code>select()</code>, <code>filter()</code>)</li>
+			<li><code>DataFrame</code> (Bioconductor), <code>tibble</code> (tidyverse), <code>data.frame</code> are all different classes with slightly different behaviors (e.g., row names)</li>
+			<li>Packages like <a href="https://sa-lee.github.io/plyranges/index.html">plyranges</a> and <a href="https://stemangiola.github.io/tidybulk/">tidybulk</a> introduces "verbs" to Bioconductor classes</li>
+		</ul>
+		<img class="place top right biocsticker"
+			src="pictures/tidyverse_sticker.png"
+			alt="Hexagon sticker for tidyverse">
+	</section>
+
+	<section class="slide-notes">
+		<h3>Function overrides</h3>
+		<p>
+			By default, the import order of the packages leads to different function overrides. Specify the function explicitly, say,
+			<code>dplyr::select()</code> and <code>AnnotationDbi::filter()</code>.
+		</p>
+		<p>
+			Alternatively, use packages like <a href="https://conflicted.r-lib.org/">conflicted</a> to explicitly resolve function conflicts.
+		</p>
+
+		<h3>Conversion between DataFrame and tibble</h3>
+		<p>One of the main differences is the use of row names. Row names of DataFrame (and other Bioconductor packages) are very useful, while tibble will remove the row names after subsetting and discourage users to use them.</p>
+		<pre class="language-r">
+<code># Tibble to DataFrame (and use one column as rownames)
+my_DF = my_tbl |>
+	column_to_rownames("rowname_col") |>
+	as("DataFrame")
+# DataFrame to tibble (and extract rownames to one column)
+my_tbl = my_DF |>
+	as_tibble(rownames = "rowname_col")</code></pre>
 	</section>
 
 	<section id="purrr" class="slide">
-		<h2>purrr</h2>
-	</section>
-
-	<section id="data-frame-comparison" class="slide">
-		<h2>Data.frame, tibble, or DataFrame?</h2>
-		as_tibble(rownames="my_row_name")
-	</section>
-
-	<section id="subset-or-filter" class="slide">
-		<h2>filter vs subset</h2>
+		<h2>purrr's map functions are handy to process many samples in the same way</h2>
+		<ul>
+			<li>Usecases: read the specific format of a pipeline output</li>
+			<li><a href="https://purrr.tidyverse.org/">purrr</a> provides a consistent interface to eliminate most for-loops:
+				<ul>
+					<li><code>my_list |> map(my_fun)</code>: the most basic form</li>
+					<li><code>my_list |> imap(...)</code>:
+						also pass the list key/name to the function</li>
+					<li>
+						<code>my_df |> pmap(function(col_A, col_B, ...) ...)</code>:<br>
+						map a data frame of parameters as input
+					</li>
+				</ul>
+			</li>
+		</ul>
+		<img class="place top right biocsticker"
+			src="pictures/purrr_sticker.png"
+			alt="Hexagon sticker for the purrr package">
 	</section>
 
 	<section id="bioconductor-learning-resources" class="slide">
-		<h2>How to learn Bioconductor?</h2>
+		<h2>Ways to learn Bioconductor</h2>
+	</section>
+
+	<section class="slide">
+		<h2 class="shout">Demo on an example dataset</h2>
 	</section>
 
 	<div id="x-inactivation" class="slide two columns r33">
