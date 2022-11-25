@@ -160,6 +160,36 @@
 		</style>
 	</section>
 
+	<section id="prerequisite" class="slide-notes">
+		<h1>Slide notes</h1>
+		<p>This talk assumes the reader has the basic understanding of:</p>
+		<ul>
+			<li>R</li>
+			<li>tidyverse packages (readr, dplyr, purrr, ggplot2)</li>
+			<li>grid graphics (mostly <code>gpar(...)</code> parameters)</li>
+		</ul>
+		<h3>R native pipe operator <code>|></code></h3>
+		<p>All the following code are equivalent:</p>
+		<pre class="language-r">
+<code>my_df = data.frame(col_A = 1:3)
+# no pipe
+transform(subset(my_df, col_A != 1), col_B = col_A + 3)
+# R native in R 4.1+
+my_df |>
+	subset(col_A != 1) |>
+	transform(col_B = col_A + 3)
+# magrittr
+my_df %>%
+	subset(col_A != 1) %>%
+	transform(col_B = col_A + 3)</code>
+		</pre>
+		<style>
+			#prerequisite {
+				grid-row: span 2;
+			}
+		</style>
+	</section>
+
 	<section id="about-me" class="slide">
 		<h2>About me</h2>
 		<div class="two columns r33">
@@ -244,14 +274,6 @@
 				font-size: 0.8em;
 			}
 		</style>
-	</section>
-
-	<section class="slide-notes">
-		<p>This talk assumes the reader has the basic understanding of:</p>
-		<ul>
-			<li>tidyverse packages (readr, dplyr, purrr, ggplot2)</li>
-			<li>grid graphics</li>
-		</ul>
 	</section>
 
 	<section id="genomicsranges-overview" class="slide">
