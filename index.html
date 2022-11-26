@@ -924,8 +924,9 @@ mat[2:3, 2] = NA_real_</code>
 		<div class="three columns">
 			<pre class="language-r dense">
 <code>my_colors = list(
-    foo1 = hcl.colors(4) |>
-        set_names(LETTERS[1:4]),
+    foo1 = hcl.colors(
+		4, palette = "viridis"
+	) |> set_names(LETTERS[1:4]),
     foo2 = circlize::colorRamp2(
         c(0, 1),
         hcl_palette = "blues"
