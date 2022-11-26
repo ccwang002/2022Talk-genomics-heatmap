@@ -859,9 +859,63 @@ my_tbl = my_DF |>
 		</style>
 	</section>
 
-	<section class="slide-notes">
-		R Graphics, 3rd, Paul Murrell (2019) ISBN:9780367780692
+	<section id="complexheatmap-demo1" class="slide tight">
+		<h2>Hello, heatmap</h2>
+		<div class="two columns">
+			<pre class="language-r dense">
+<code>mat = matrix(..., nr = 18, nc = 24)  # see notes
 
+# 1. Define a color mapping function
+col_fun = circlize::colorRamp2(
+	c(-2, 0, 2), c("blue", "white", "red"))
+c(0, 1, 2, 3) |> set_names() |> col_fun()
+# "#FFFFFFFF" "#FF9E81FF" "#FF0000FF" "#FF0000FF"
+
+# 2. Construct the heatmap
+ht = Heatmap(
+    mat, name = "mat",
+    col = col_fun,
+    na_col = "black"  # color for NAs
+)
+draw(ht)</code>
+			</pre>
+			<figure>
+				<img class="fill w"
+					src="pictures/complexheatmap_demo_1.png"
+					alt="Heatmap demo 1">
+			</figure>
+		</div>
+	</section>
+
+	<section class="slide-notes" style="grid-row: span 2">
+		<h3>Code to generate the example matrix</h3>
+		<p>The code was copied from the <a href="https://jokergoo.github.io/ComplexHeatmap-reference/book/a-single-heatmap.html">first example</a> in the ComplexHeatmap Complete Reference (Chatper 2: A Single Heatmap).</p>
+		<pre class="language-r">
+<code>set.seed(123)
+nr1 = 4; nr2 = 8; nr3 = 6; nr = nr1 + nr2 + nr3
+nc1 = 6; nc2 = 8; nc3 = 10; nc = nc1 + nc2 + nc3
+mat = cbind(
+  rbind(
+	matrix(rnorm(nr1*nc1, mean = 1, sd = 0.5), nr = nr1),
+    matrix(rnorm(nr2*nc1, mean = 0, sd = 0.5), nr = nr2),
+  	matrix(rnorm(nr3*nc1, mean = 0, sd = 0.5), nr = nr3)),
+  rbind(
+	matrix(rnorm(nr1*nc2, mean = 0, sd = 0.5), nr = nr1),
+    matrix(rnorm(nr2*nc2, mean = 1, sd = 0.5), nr = nr2),
+	matrix(rnorm(nr3*nc2, mean = 0, sd = 0.5), nr = nr3)),
+  rbind(
+	matrix(rnorm(nr1*nc3, mean = 0.5, sd = 0.5), nr = nr1),
+    matrix(rnorm(nr2*nc3, mean = 0.5, sd = 0.5), nr = nr2),
+    matrix(rnorm(nr3*nc3, mean = 1, sd = 0.5), nr = nr3))
+)
+# random shuffle rows and columns
+mat = mat[sample(nr, nr), sample(nc, nc)]
+# Add column and row names
+rownames(mat) = paste0("row", seq_len(nr))
+colnames(mat) = paste0("column", seq_len(nc))
+# Add some missing values
+mat[2:3, 2] = NA_real_</code>
+		</pre>
 	</section>
 
 	<section class="slide">
