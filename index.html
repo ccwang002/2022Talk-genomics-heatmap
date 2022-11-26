@@ -190,7 +190,25 @@ my_df %>%
 		</pre>
 	</section>
 
-	<section id="about-me" class="slide">
+	<section id="how-to-draw-an-owl" class="slide">
+		<img class="place center"
+			src="pictures/how_to_draw_an_owl.jpg"
+			alt="A meme showing how to draw an owl in two steps: 1. draw some circles. 2. draw the rest of the fucking owl.">
+		<span class="goal next">Our goal</span>
+		<style>
+			#how-to-draw-an-owl .goal {
+				position: absolute;
+				bottom: 100px;
+				left: 300px;
+				text-align: center;
+				font-size: 2rem;
+				color: var(--color-key);
+				font-weight: bold;
+			}
+		</style>
+	</section>
+
+	<section id="about-me" class="slide clear">
 		<h2>About me</h2>
 		<div class="two columns r33">
 			<ul>
@@ -248,14 +266,15 @@ my_df %>%
 			alt="Hexagon sticker for Bioconductor">
 	</section>
 
-	<section id="talk-goal" class="slide">
-		<h2>Today's goal</h2>
+	<section id="outline" class="slide">
+		<h2>Outline</h2>
 		<div class="two columns l67">
 			<ol>
-				<li>Understand the basic data structures for genomics (<code>GenomicRanges</code>: <code>GRanges</code> and <code>GRangesList</code>)</li>
-				<li>Query genome annotations (<code>ensembldb</code>)</li>
-				<li>Store experiment results (<code>SummarizedExperiment</code>)</li>
-				<li>Plot heatmap visualizations (<code>ComplexHeatmap</code>)</li>
+				<li>Understand the basic data structures for genomics
+					(<a href="https://bioconductor.org/packages/release/bioc/html/GenomicRanges.html">GenomicRanges</a>: <code>GRanges</code> and <code>GRangesList</code>)</li>
+				<li>Query genome annotations (<a href="https://bioconductor.org/packages/release/bioc/html/ensembldb.html">ensembldb</a>)</li>
+				<li>Store experiment results (<a href="https://bioconductor.org/packages/release/bioc/html/SummarizedExperiment.html">SummarizedExperiment</a>)</li>
+				<li>Plot heatmap visualizations (<a href="https://bioconductor.org/packages/release/bioc/html/ComplexHeatmap.html">ComplexHeatmap</a>)</li>
 				<li>A demo for data exploration and analysis</li>
 				<li>Challenges for future multi-omics data analysis</li>
 			</ol>
@@ -267,11 +286,14 @@ my_df %>%
 			</figure>
 		</div>
 		<style>
-			#talk-goal .columns {
+			#outline .columns {
 				grid-column-gap: 1rem;
 			}
-			#talk-goal code {
-				font-size: 0.8em;
+			#outline code {
+				font-size: 0.875em;
+			}
+			#outline figure {
+				align-self: center;
 			}
 		</style>
 	</section>
@@ -795,11 +817,52 @@ my_tbl = my_DF |>
 		</ul>
 	</section>
 
+	<section id="genomics-data-vis" class="slide">
+		Gviz, ggbio
+		heatmap
+		circos plot
+		rasterization
+	</section>
+
+	<section id="complexheatmap" class="slide tight">
+		<h2>ComplexHeatmap: the ultimate way to make heatmaps</h2>
+		<div class="two columns">
+			<ul>
+				<li></li>
+				<li></li>
+				<li>Use <a href="https://stat.ethz.ch/R-manual/R-devel/library/grid/html/grid-package.html">grid</a> graphics (check out <a href="https://www.stat.auckland.ac.nz/~paul/RG3e/">R Graphics, 3rd</a>)</li>
+				<li>User can directly control the underlying parameters <code>gpar(...)</code> (unlike <a href="https://ggplot2.tidyverse.org/">ggplot2</a>)</li>
+				<li>The following introduction slides are just copied from ComplexHeatmap's reference book</li>
+			</ul>
+		<figure>
+			<img class="fill w"
+				src="pictures/complexheatmap_book_cover.jpg" alt="Cover of the ComplexHeatmap complete reference book">
+			<figcaption class="citation">
+				<a href="https://jokergoo.github.io/ComplexHeatmap-reference/book/">ComplexHeatmap Complete Reference</a>
+				is an extensive guide to the package's design and all of the configurations.
+			</figcaption>
+		</figure>
+		</div>
+		<style>
+			#complexheatmap .two.columns {
+				grid-template-columns: 7fr 3fr;
+			}
+			#complexheatmap figure img {
+				border: 2px solid var(--color-key);
+			}
+		</style>
+	</section>
+
+	<section class="slide-notes">
+		R Graphics, 3rd, Paul Murrell (2019) ISBN:9780367780692
+
+	</section>
+
 	<section class="slide">
 		<h2 class="shout">Demo on an example dataset</h2>
 	</section>
 
-	<div id="x-inactivation" class="slide two columns r33">
+	<section id="x-inactivation" class="slide two columns r33">
 		<div>
 			<h2>X-inactivation</h2>
 		</div>
@@ -813,7 +876,24 @@ my_tbl = my_DF |>
 				via Wikimedia Commons
 			</figcaption>
 		</figure>
-	</div>
+	</section>
+
+	<section id="data-overview-final" class="slide">
+		<div class="two columns">
+			<div>
+				<p>Final data overview figure in the <a href="https://doi.org/10.1016/j.ccell.2021.01.006">paper</a></p>
+			</div>
+			<div></div>
+		</div>
+		<img class="final-figure1 place right"
+			src="pictures/cptac_gbm_figure1_data_overview.png"
+			alt="Data overview figure of the cptac glioblastoma cohort in the final publication in 2021">
+		<style>
+			#data-overview-final .final-figure1 {
+				height: 450px;
+			}
+		</style>
+	</section>
 
 	<div class="progress"></div>
 
