@@ -984,9 +984,34 @@ draw(ht, merge_legends = TRUE)</code>
 		</style>
 	</section>
 
+	<section id="heatmap-list" class="slide tight">
+		<h2>Draw list of heatmaps and annotations</h2>
+		<div class="two columns r40">
+			<div>
+				<ul>
+					<li>Useful for combining heatmaps of different data types of the same sets of samples</li>
+					<li>Match the row/column names and orders</li>
+				</ul>
+				<pre class="language-r dense">
+<code># To concatenate heatmaps row-wise
+mat1 = mat1[sample_order, ]
+mat2 = mat2[sample_order, ]
+anno_df = anno_df[sample_order, ]
+ht_list = ht1(mat1) + ht2(mat2) + row_ha(anno_df)
 
-	<section id="heatmap-structure" class="slide tight">
-		<h2>Heatmap structure</h2>
+# ... column-wise
+ht_list = ht1 %v% ht2 %v% col_ha</code>
+				</pre>
+			</div>
+			<figure>
+				<img class="fill w"
+					src="pictures/complexheatmap_design.png"
+					alt="ComplexHeatmap design allows for list of heatmaps and annotations">
+				<figcaption class="citation">
+					Lists of heatmaps and annotations can be concatenated
+				</figcaption>
+			</figure>
+		</div>
 	</section>
 
 	<section class="slide">
