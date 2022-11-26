@@ -96,9 +96,11 @@
 			R-Ladies Taipei<br>
 			2022-11-28
 		</p>
-		<p id="usage-instr">
-			<kbd>Esc</kbd> or swipe up<br>with three fingers to exit<br>
-			<kbd>←</kbd> <kbd>→</kbd> to navigate<br>
+		<p id="talk-details">
+			<span class="web-instructions">
+				<kbd>Esc</kbd> or swipe up<br>with three fingers to exit<br>
+				<kbd>←</kbd> <kbd>→</kbd> to navigate<br>
+			</span>
 			<a rel="license" href="http://creativecommons.org/licenses/by/4.0/">
 				<img alt="Creative Commons Attribution 4.0 International License"
 					src="pictures/cc-by-4.0.svg"/>
@@ -137,7 +139,7 @@
 			#cover .copyright {
 				left: calc(var(--slide-left-side) / 2);
 			}
-			#usage-instr {
+			#talk-details {
 				color: var(--color-white);
 				font-size: 1rem;
 				line-height: 1.75;
@@ -147,15 +149,20 @@
 				text-align: right;
 				margin: 0;
 			}
-			#usage-instr a[rel="license"] {
+			#talk-details a[rel="license"] {
 				background-image: none;
 			}
-			#usage-instr a[rel="license"] img {
+			#talk-details a[rel="license"] img {
 				height: 1em;
 			}
-			#usage-instr kbd {
+			#talk-details kbd {
 				color: var(--color-white);
 				background-color: var(--color-key);
+			}
+			@media print {
+				#cover .web-instructions {
+					display: none;
+				}
 			}
 		</style>
 	</section>
