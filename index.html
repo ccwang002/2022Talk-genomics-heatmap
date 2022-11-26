@@ -173,17 +173,17 @@
 		</ul>
 		<p>
 			Since R 4.1, R introduces a native <a href="https://r4ds.had.co.nz/pipes.html">pipe</a> operator <code>|></code>.
-			All the following code are equivalent:
+			For example, the following code are equivalent:
 		</p>
 		<pre class="language-r">
 <code>my_df = data.frame(col_A = 1:3)
 # no pipe
 transform(subset(my_df, col_A != 1), col_B = col_A + 3)
-# R native in R 4.1+
+# native pipe in R 4.1+
 my_df |>
 	subset(col_A != 1) |>
 	transform(col_B = col_A + 3)
-# magrittr
+# magrittr pipe
 my_df %>%
 	subset(col_A != 1) %>%
 	transform(col_B = col_A + 3)</code>
@@ -392,7 +392,7 @@ seqlevelsStyle(gr)</code>
 				padding: 0 0.5em 0.5em 0.5em;
 				font-size: 1rem;
 				left: 750px;
-				min-width: 10em;
+				min-width: 11em;
 			}
 			#granges-cheatsheet .command pre {
 				margin: 0 0 0 0.5em;
@@ -412,7 +412,7 @@ seqlevelsStyle(gr)</code>
 				background: var(--color-granges);
 			}
 			#granges-cheatsheet .granges.command {
-				top: 120px;
+				top: 90px;
 				background-color: var(--color-granges);
 			}
 
@@ -424,7 +424,7 @@ seqlevelsStyle(gr)</code>
 				background: var(--color-dataframe);
 			}
 			#granges-cheatsheet .dataframe.command {
-				top: 295px;
+				top: 288px;
 				background-color: var(--color-dataframe);
 			}
 
@@ -810,7 +810,7 @@ my_tbl = my_DF |>
 		<h2>Ways to learn Bioconductor</h2>
 		<ul>
 			<li><a href="https://www.bioconductor.org/help/package-vignettes/">Package vignettes</a> are great to get started with a new package</li>
-			<li>Bioconductor <a href="https://www.bioconductor.org/packages/release/workflows/">workflows</a> and <a href="https://www.bioconductor.org/help/course-materials/">courses</a> integrate multiple packages over a topic, such as <a href="https://www.bioconductor.org/packages/release/workflows/vignettes/annotation/inst/doc/Annotation_Resources.html">annotation</a>.</li>
+			<li>Bioconductor <a href="https://www.bioconductor.org/packages/release/workflows/">workflows</a> and <a href="https://www.bioconductor.org/help/course-materials/">courses</a> integrate multiple packages over a topic, such as <a href="https://www.bioconductor.org/packages/release/workflows/vignettes/annotation/inst/doc/Annotation_Resources.html">annotation</a></li>
 			<li><a href="https://genomicsclass.github.io/book/">PH525x series - Biomedical Data Science</a> by Rafael Irizarry and Michael Love</li>
 			<li><a href="https://www.huber.embl.de/msmb/">Modern Statistics for Modern Biology</a> by Susan Holmes and Wolfgang Huber</li>
 			<li><a href="https://blog.liang2.tw/tag/bioconductor/">My blog posts</a> about my usage and experience of R/Bioconductor</li>
