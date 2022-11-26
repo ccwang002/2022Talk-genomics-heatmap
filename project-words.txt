@@ -13,11 +13,13 @@ Fira
 fleqn
 ggplot2
 glioblastoma
+gpar
 highlightjs
 Hsapiens
 HTAN
 katex
 Liang
+magrittr
 Makeev
 mcols
 methylation
