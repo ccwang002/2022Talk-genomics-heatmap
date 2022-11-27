@@ -1055,6 +1055,56 @@ ht_list = ht1 %v% ht2 %v% col_ha</code>
 		</style>
 	</section>
 
+	<section id="data-process-analysis-steps" class="slide">
+		<h2>Steps to process and analyze the data</h2>
+		<ol>
+			<li>Download the datasets from NCI's <abbr title="Genomic Data Commons">GDC</abbr> portal;<br>
+				focus on RNA-Seq (gene expression) and DNA methylation microarray only</li>
+			<li>Collect the datasets and create <code>SummarizedExperiment</code> objects</li>
+			<li>Data exploration (<code>ComplexHeatmap</code> and other visualizations)</li>
+			<li>Data analysis: using DNA damage repair by <a href="https://en.wikipedia.org/wiki/O-6-methylguanine-DNA_methyltransferase">MGMT</a> as an example</li>
+		</ol>
+	</section>
+
+	<section id="download-data-from-gdc" class="slide">
+		<div class="two columns">
+			<div>
+				<h2>GDC data download</h2>
+				<ul>
+					<li><a href="https://portal.gdc.cancer.gov/">GDC portal</a> provides a powerful facet search by cases' (patients') and files' metadata</li>
+					<li>Possible to do this in R (see notes), though the portal's interface is more user friendly</li>
+					<li>Download the manifest and all the metadata using the shopping cart</li>
+				</ul>
+			</div>
+			<figure>
+				<img class="fill w"
+					src="pictures/gdc_repository_screenshot.png"
+					alt="Screenshot of the NCI GDC repository search interface, selecting the datasets of interest using filters in cases (patients) and files">
+				<img class="fill w"
+					src="pictures/gdc_cart_screenshot.png"
+					alt="Screenshot of the NCI GDC repository cart interface to download the selected data files and the associated metadata">
+				<figcaption class="citation">
+					<a href="https://portal.gdc.cancer.gov/repository?facetTab=files&filters=%7B%22op%22%3A%22and%22%2C%22content%22%3A%5B%7B%22op%22%3A%22in%22%2C%22content%22%3A%7B%22field%22%3A%22cases.primary_site%22%2C%22value%22%3A%5B%22brain%22%5D%7D%7D%2C%7B%22op%22%3A%22in%22%2C%22content%22%3A%7B%22field%22%3A%22cases.project.program.name%22%2C%22value%22%3A%5B%22CPTAC%22%5D%7D%7D%2C%7B%22op%22%3A%22in%22%2C%22content%22%3A%7B%22field%22%3A%22cases.project.project_id%22%2C%22value%22%3A%5B%22CPTAC-3%22%5D%7D%7D%2C%7B%22op%22%3A%22in%22%2C%22content%22%3A%7B%22field%22%3A%22files.access%22%2C%22value%22%3A%5B%22open%22%5D%7D%7D%2C%7B%22op%22%3A%22in%22%2C%22content%22%3A%7B%22field%22%3A%22files.analysis.workflow_type%22%2C%22value%22%3A%5B%22STAR%20-%20Counts%22%2C%22SeSAMe%20Methylation%20Beta%20Estimation%22%5D%7D%7D%2C%7B%22op%22%3A%22in%22%2C%22content%22%3A%7B%22field%22%3A%22files.data_format%22%2C%22value%22%3A%5B%22tsv%22%2C%22txt%22%5D%7D%7D%5D%7D">
+						GDC's repository link
+					</a>
+					to only select the open-access RNA-Seq read counts and DNA methylation beta values
+				</figcaption>
+			</figure>
+		</div>
+
+		<style>
+			#download-data-from-gdc {
+				--slide-right-side: 1rem;
+			}
+			#download-data-from-gdc .columns {
+				column-gap: 1rem;
+			}
+			#download-data-from-gdc figure {
+				line-height: 1;
+			}
+		</style>
+	</section>
+
 	<section id="x-inactivation" class="slide two columns r33">
 		<div>
 			<h2>X-inactivation</h2>
