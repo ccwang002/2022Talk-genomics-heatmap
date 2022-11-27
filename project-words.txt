@@ -5,12 +5,10 @@ ccwang
 circlize
 CPTAC
 DALL
+deframe
 dend
 dendrogram
 dplyr
-tbls
-deframe
-unstranded
 Ellisn
 ENSE
 Ensembl
@@ -48,10 +46,13 @@ rnorm
 rtracklayer
 runif
 Sagalaev
+tbls
 TCGA
 TCIA
 tibble
 UCSC
 unlist
+unstranded
 Vadim
+vals
 viridis

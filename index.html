@@ -742,7 +742,7 @@ genes(EnsDb.Hsapiens.v86, filter = my_filter) |>
 		<div class="columns two">
 			<div>
 				<ul>
-					<li>An object to keep the data of a cohort and the related metadata (both samples and features) together</li>
+					<li>An object to <strong>keep the data</strong> of a cohort and the related <strong>metadata</strong> (both samples and features) <strong>connected</strong></li>
 					<li>Useful for organizing -omics data</li>
 					<li>Export/Reload the object as a RDS file</li>
 				</ul>
@@ -819,7 +819,7 @@ my_tbl = my_DF |>
 					<li><code>my_list |> imap(...)</code>:
 						also pass the list key/name to the function</li>
 					<li>
-						<code>my_df |> pmap(function(col_A, col_B, ...) ...)</code>:<br>
+						<code>my_df |> pmap(function(col_A, col_B){ ... })</code>:<br>
 						map a data frame of parameters as input
 					</li>
 				</ul>
@@ -828,6 +828,11 @@ my_tbl = my_DF |>
 		<img class="place top right biocsticker"
 			src="pictures/purrr_sticker.png"
 			alt="Hexagon sticker for the purrr package">
+		<style>
+			#purrr code {
+				font-size: 0.875em;
+			}
+		</style>
 	</section>
 
 	<section id="bioconductor-learning-resources" class="slide">
@@ -1260,25 +1265,26 @@ example_readcount_tbl = read_rna_readcount(
 		</div>
 	</section>
 
-	<section class="slide tight">
-		<h2></h2>
+	<section id="rna-summarizedexperiment" class="slide tight">
+		<h2>RNA-Seq's SummarizedExperiment</h2>
 		<div class="two columns">
 			<pre class="language-r dense">
 <code>rna = SummarizedExperiment(
     list(tpm_unstranded = mat, ...),
     rowRanges = all_genes,
     colData = rna_meta,
+	# Keep relevant details in metadata
     metadata = list(
-        title = "CPTAC3 Glioblastoma 2021",
+        title = "CPTAC Glioblastoma 2021",
         data_type = "RNA-Seq transcriptome",
 		...
     )
 )
-</code>
+rna |> saveRDS("cptac_gbm_2021_rnaseq.rds")</code>
 			</pre>
-			<pre class="language-r dense output">
-<code>
-rna
+			<div>
+				<pre class="language-r dense output">
+<code>rna
 # class: RangedSummarizedExperiment
 # dim: 60616 108
 # metadata(6): title doi ... data_workflow annotation_source
@@ -1287,10 +1293,96 @@ rna
 #   ENSG00000210196.2
 # rowData names(2): gene_name gene_biotype
 # colnames(108): C3L-00104 C3L-00365 ... PT-WVLH PT-Y8DK
-# colData names(8): sample_type case_id ... gdc_file_id md5sum
-</code>
+# colData names(8): sample_type case_id ... gdc_file_id md5sum</code>
+				</pre>
+				<p>
+					Match the dimensions and names of different matrices and data frames
+				</p>
+			</div>
+		</div>
+	</section>
+
+	<section id="prep-dna-methyl" class="slide tight">
+		<h2>Prepare DNA methyl probe beta values</h2>
+		<div class="two columns">
+			<pre class="language-r dense">
+<code># row/feature annotations
+dna_methyl_anno_gr = dna_methyl_anno_tbl |>
+    filter(
+		if_all(c(start, end), ~ !is.na(.x)),
+		probeID %in% good_qual_probe_ids
+	) |>
+    column_to_rownames("probeID") |>
+    makeGRangesFromDataFrame(
+        seqinfo = seqinfo(all_genes),
+        keep.extra.columns = TRUE,
+		# BED file uses 0-based intervals
+		starts.in.df.are.0based = TRUE
+    )
+# column/sample annotations
+dna_methyl_meta = dna_methyl_manifest_tbl |>
+	column_to_rownames("sample_nickname")</code>
+			</pre>
+			<pre class="language-r dense">
+<code># reader function for one sample
+read_dna_methyl_beta_vals = function(pth) {
+    beta_vals = read_tsv(pth, ...) |> deframe()
+    beta_vals[names(dna_methyl_anno_gr)]
+}
+# data matrix (beta values)
+mat = dna_methyl_manifest_tbl |>
+    select(file_id, file_pth) |>
+    deframe() |>
+    map_dfc(read_dna_methyl_beta_vals) |>
+    as.matrix()
+# subset/rename/reorder
+mat = mat[, dna_methyl_meta$gdc_file_id]
+colnames(mat) = rownames(dna_methyl_meta)</code>
 			</pre>
 		</div>
+	</section>
+
+	<section id="dna-methyl-summarizedexperiment" class="slide tight">
+		<h2>DNA methyl's SummarizedExperiment</h2>
+		<div class="two columns">
+			<div>
+				<pre class="language-r dense">
+<code>dna_methyl = SummarizedExperiment(
+    list(beta_val = mat),
+    rowRanges = dna_methyl_anno_gr,
+    colData = dna_methyl_meta,
+    metadata = list(...)
+)
+dna_methyl |>
+	saveRDS("cptac_gbm_2021_dna_methyl.rds")
+</code>
+				</pre>
+				<pre class="language-r dense output">
+<code>dna_methyl
+# class: RangedSummarizedExperiment
+# dim: 760464 97
+# metadata(6): title doi ... data_workflow annotation_source
+# assays(1): beta_val
+# rownames(760464): cg21870274 cg09499020 ... cg14273923 cg16855331
+# rowData names(6): probe_strand gene_names ... CGI CGI_position
+# colnames(97): C3L-00104 C3L-00365 ... C3N-03188 C3N-03473
+# colData names(8): sample_type case_id ... gdc_file_id md5sum</code>
+				</pre>
+			</div>
+			<div>
+				<p>In the subsequent analyses, we just need these files:</p>
+				<ol>
+					<li>SummarizedExperiment objects (RDS)</li>
+					<li>Sample information table (clinical data, classifications) (parquet)</li>
+				</ol>
+				<p>Refer to the slide notes and the full R Markdown notebooks for the complete steps</p>
+			</div>
+		</div>
+		<style>
+			#dna-methyl-summarizedexperiment :is(p, ol) {
+				font-size: 1.25rem;
+			}
+		</style>
 	</section>
 
 	<section class="slide tight">
