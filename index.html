@@ -37,14 +37,32 @@
 			color: var(--color-on);
 		}
 
+		/* Increase code snippets font weight */
+		.slide pre code {
+			font-weight: 450;
+		}
+
 		pre.dense code {
 			font-size: 0.875rem;
 			line-height: 1.75;
 		}
 
-		.slide pre code {
-			font-weight: 450;
+		pre.output code {
+			font-size: 0.5rem;
 		}
+
+		/* more densely packed page */
+
+		.slide.fullpage {
+			padding-top: 15px;
+		}
+
+		.slide.fullpage p {
+			margin-bottom: 0.5em;
+		}
+
+
+		/* (Bio)stickers */
 
 		.place.top.right.biocsticker {
 			width: 120px;
@@ -85,6 +103,8 @@
 			<label for="show-notes-toggle">Slide notes</label>
 		</li>
 	</menu>
+
+	<!-- cSpell:ignore unproces PT-WVLH -->
 
 	<!-- Cover Slide -->
 	<section id="cover" class="slide clear">
@@ -165,7 +185,7 @@
 		</style>
 	</section>
 
-	<section class="slide-notes" style="grid-row: span 2;">
+	<section class="slide-notes" style="grid-row: span 3;">
 		<h1>Slide notes</h1>
 		<p><strong>This is not a tutorial.</strong>
 			The goal of this talk is to introduce the related packages and provide some keywords for each task.
@@ -722,7 +742,7 @@ genes(EnsDb.Hsapiens.v86, filter = my_filter) |>
 		<div class="columns two">
 			<div>
 				<ul>
-					<li>An object to keep the data of a cohort and the related metadata (both samples and features) together</li>
+					<li>An object to <strong>keep the data</strong> of a cohort and the related <strong>metadata</strong> (both samples and features) <strong>connected</strong></li>
 					<li>Useful for organizing -omics data</li>
 					<li>Export/Reload the object as a RDS file</li>
 				</ul>
@@ -767,7 +787,7 @@ se = readRDS("my_se.rds")
 			alt="Hexagon sticker for tidyverse">
 	</section>
 
-	<section class="slide-notes">
+	<section class="slide-notes" style="grid-row: span 2;">
 		<h3>Function overrides</h3>
 		<p>
 			By default, the import order of the packages leads to different function overrides. Specify the function explicitly, say,
@@ -799,7 +819,7 @@ my_tbl = my_DF |>
 					<li><code>my_list |> imap(...)</code>:
 						also pass the list key/name to the function</li>
 					<li>
-						<code>my_df |> pmap(function(col_A, col_B, ...) ...)</code>:<br>
+						<code>my_df |> pmap(function(col_A, col_B){ ... })</code>:<br>
 						map a data frame of parameters as input
 					</li>
 				</ul>
@@ -808,6 +828,11 @@ my_tbl = my_DF |>
 		<img class="place top right biocsticker"
 			src="pictures/purrr_sticker.png"
 			alt="Hexagon sticker for the purrr package">
+		<style>
+			#purrr code {
+				font-size: 0.875em;
+			}
+		</style>
 	</section>
 
 	<section id="bioconductor-learning-resources" class="slide">
@@ -839,9 +864,9 @@ my_tbl = my_DF |>
 		<div class="two columns">
 			<ul>
 				<li>Heatmap is a basic way to dump high dimensional data in one plot and identify large trends</li>
-				<li>Use <a href="https://stat.ethz.ch/R-manual/R-devel/library/grid/html/grid-package.html">grid</a> graphics (check out <a href="https://www.stat.auckland.ac.nz/~paul/RG3e/">R Graphics, 3rd</a>)</li>
-				<li>User can directly control the underlying parameters <code>gpar(...)</code> (unlike <a href="https://ggplot2.tidyverse.org/">ggplot2</a>)</li>
-				<li><a href="https://bioconductor.org/packages/release/bioc/html/ComplexHeatmap.html">ComplexHeatmap</a> is highly configurable</li>
+				<li><a href="https://bioconductor.org/packages/release/bioc/html/ComplexHeatmap.html">ComplexHeatmap</a> is <strong>highly configurable</strong></li>
+				<li>Based on <a href="https://stat.ethz.ch/R-manual/R-devel/library/grid/html/grid-package.html">grid</a> graphics (check out <a href="https://www.stat.auckland.ac.nz/~paul/RG3e/">R Graphics, 3rd</a>)</li>
+				<li>User directly controls the underlying parameters by <code>gpar(...)</code> (unlike <a href="https://ggplot2.tidyverse.org/">ggplot2</a>)</li>
 				<li>We'll go through some examples from its <a href="https://jokergoo.github.io/ComplexHeatmap-reference/book/">guidebook</a></li>
 			</ul>
 		<figure>
@@ -892,7 +917,7 @@ draw(ht)</code>
 		</div>
 	</section>
 
-	<section class="slide-notes" style="grid-row: span 2;">
+	<section class="slide-notes" style="grid-row: span 3;">
 		<h3>Code to generate the example matrix</h3>
 		<p>The code was copied from the <a href="https://jokergoo.github.io/ComplexHeatmap-reference/book/a-single-heatmap.html">first example</a> in the ComplexHeatmap Complete Reference (Chatper 2: A Single Heatmap).</p>
 		<pre class="language-r">
@@ -1053,6 +1078,325 @@ ht_list = ht1 %v% ht2 %v% col_ha</code>
 				line-height: 1.5;
 			}
 		</style>
+	</section>
+
+	<section id="data-process-analysis-steps" class="slide">
+		<h2>Steps to process and analyze the data</h2>
+		<ol>
+			<li>Download the datasets from NCI's <abbr title="Genomic Data Commons">GDC</abbr> portal;<br>
+				focus on RNA-Seq (gene expression) and DNA methylation microarray only</li>
+			<li>Collect the datasets and create <code>SummarizedExperiment</code> objects</li>
+			<li>Data exploration (<code>ComplexHeatmap</code> and other visualizations)</li>
+			<li>Data analysis: using DNA damage repair by <a href="https://en.wikipedia.org/wiki/O-6-methylguanine-DNA_methyltransferase">MGMT</a> as an example</li>
+		</ol>
+	</section>
+
+	<section id="download-data-from-gdc" class="slide">
+		<div class="two columns">
+			<div>
+				<h2>GDC data download</h2>
+				<ul>
+					<li><a href="https://portal.gdc.cancer.gov/">GDC portal</a> provides a powerful facet search by cases' (patients') and files' metadata</li>
+					<li>Possible to do this in R (see notes), though the portal's interface is more user friendly</li>
+					<li>Download the manifest and all the metadata using the shopping cart</li>
+				</ul>
+			</div>
+			<figure>
+				<img class="fill w"
+					src="pictures/gdc_repository_screenshot.png"
+					alt="Screenshot of the NCI GDC repository search interface, selecting the datasets of interest using filters in cases (patients) and files">
+				<img class="fill w"
+					src="pictures/gdc_cart_screenshot.png"
+					alt="Screenshot of the NCI GDC repository cart interface to download the selected data files and the associated metadata">
+				<figcaption class="citation">
+					<a href="https://portal.gdc.cancer.gov/repository?facetTab=files&filters=%7B%22op%22%3A%22and%22%2C%22content%22%3A%5B%7B%22op%22%3A%22in%22%2C%22content%22%3A%7B%22field%22%3A%22cases.primary_site%22%2C%22value%22%3A%5B%22brain%22%5D%7D%7D%2C%7B%22op%22%3A%22in%22%2C%22content%22%3A%7B%22field%22%3A%22cases.project.program.name%22%2C%22value%22%3A%5B%22CPTAC%22%5D%7D%7D%2C%7B%22op%22%3A%22in%22%2C%22content%22%3A%7B%22field%22%3A%22cases.project.project_id%22%2C%22value%22%3A%5B%22CPTAC-3%22%5D%7D%7D%2C%7B%22op%22%3A%22in%22%2C%22content%22%3A%7B%22field%22%3A%22files.access%22%2C%22value%22%3A%5B%22open%22%5D%7D%7D%2C%7B%22op%22%3A%22in%22%2C%22content%22%3A%7B%22field%22%3A%22files.analysis.workflow_type%22%2C%22value%22%3A%5B%22STAR%20-%20Counts%22%2C%22SeSAMe%20Methylation%20Beta%20Estimation%22%5D%7D%7D%2C%7B%22op%22%3A%22in%22%2C%22content%22%3A%7B%22field%22%3A%22files.data_format%22%2C%22value%22%3A%5B%22tsv%22%2C%22txt%22%5D%7D%7D%5D%7D">
+						GDC's repository link
+					</a>
+					to only select the open-access RNA-Seq read counts and DNA methylation beta values
+				</figcaption>
+			</figure>
+		</div>
+		<style>
+			#download-data-from-gdc {
+				--slide-right-side: 1rem;
+			}
+			#download-data-from-gdc .columns {
+				column-gap: 1rem;
+			}
+			#download-data-from-gdc figure {
+				line-height: 1;
+			}
+		</style>
+	</section>
+
+	<section id="download-annotations" class="slide tight">
+		<h2>Download sample/feature annotations</h2>
+		<div class="two columns r40">
+			<div>
+				<ul>
+					<li>
+						<strong>Clinical data and sample classifications</strong> from the <a href="https://pubmed.ncbi.nlm.nih.gov/33577785/">manuscript</a>'s Supplemental Table S1;<br>
+						combined the tables into a Parquet file
+					</li>
+					<li><strong>Gene annotations</strong> from AnnotationHub (EnsDb): <br>
+						GDC uses GENCODE v36 = Ensembl 102 (<a href="https://annotationhub.bioconductor.org/ahid/AH89180">AH89180</a>)</li>
+					<li>DNA methylation <strong>microarray <a href="https://gdc.cancer.gov/about-data/gdc-data-processing/gdc-reference-files">probe design</a></strong> (Illumina EPIC) and an external <a href="https://zwdzwd.github.io/InfiniumAnnotation">probe annotations</a></li>
+				</ul>
+				<p>See notes for details</p>
+			</div>
+			<pre class="language-text dense">
+				<code># gdc-client download \
+#   -m cptac_gbm_2021_manifest.tsv \
+#   -d /path/to/gdc_downloads
+/path/to/gdc_downloads
+├── &lt;file_id UUID&gt;
+│  ├── ...star_gene_counts.tsv
+...  or...sesame.level3betas.txt
+
+/path/to/project_root
+├── gdc_manifest_plus_metadata.tsv
+├── cptac_gbm_2021_table_s1.xlsx
+├── cptac_gbm_2021_sample_info.parquet
+├── EnsDb.Hsapiens.v102.sqlite
+├── EPIC.hg38.manifest.gencode.v36.tsv.gz
+├── EPIC.hg38.mask.tsv.gz
+...</code>
+			</pre>
+		</div>
+		<style>
+			#download-annotations {
+				--slide-right-side: 1rem;
+			}
+			#download-annotations .columns {
+				column-gap: 2rem;
+			}
+		</style>
+	</section>
+
+	<section id="prep-rna-gene-annotations" class="slide tight">
+		<h2>Prepare row/feature annotations</h2>
+		<div class="two columns">
+			<pre class="language-r dense">
+<code>edb = EnsDb("EnsDb.Hsapiens.v102.sqlite")
+# Keep only genes in the canonical chromosomes
+gene_filter = AnnotationFilter(
+	~ gene_biotype != "LRG_gene" &
+		seq_name %in% c(1:22, "X", "Y", "MT"))
+all_genes = genes(edb, filter = gene_filter) |>
+	sortSeqlevels() |> sort()
+
+# Rename using gene IDs
+names(all_genes) = all_genes$gene_id_version
+
+# Convert the chromosome styles to UCSC
+# seqnames become chr1...chr22 chrX chrY chrM
+seqlevelsStyle(all_genes) = "UCSC"</code>
+			</pre>
+			<div class="next">
+				<pre class="language-r dense output">
+<code>all_genes
+# GRanges object with 60616 ranges and 2 metadata columns:
+# 	                seqnames      ranges strand |   gene_name           gene_biotype
+# 	                   &lt;Rle&gt;   &lt;IRanges&gt;  &lt;Rle&gt; | &lt;character&gt;            &lt;character&gt;
+# ENSG00000223972.5     chr1 11869-14409      + |     DDX11L1 transcribed_unproces..
+# ENSG00000243485.5     chr1 29554-31109      + | MIR1302-2HG                 lncRNA
+# ENSG00000284332.1     chr1 30366-30503      + |   MIR1302-2                  miRNA
+# ENSG00000268020.3     chr1 52473-53312      + |      OR4G4P unprocessed_pseudogene
+# ENSG00000240361.2     chr1 57598-64116      + |     OR4G11P transcribed_unproces..
+#               ...      ...         ...    ... .         ...                    ...
+# ENSG00000210144.1     chrM   5826-5891      - |       MT-TY                Mt_tRNA
+# ENSG00000210151.2     chrM   7446-7514      - |      MT-TS1                Mt_tRNA
+# ENSG00000198695.2     chrM 14149-14673      - |      MT-ND6         protein_coding
+# ENSG00000210194.1     chrM 14674-14742      - |       MT-TE                Mt_tRNA
+# ENSG00000210196.2     chrM 15956-16023      - |       MT-TP                Mt_tRNA
+# -------
+# seqinfo: 25 sequences (1 circular) from hg38 genome
+</code>
+				</pre>
+				<p>This will be the row (feature) order and annotations of the data matrix</p>
+			</div>
+		</div>
+	</section>
+
+	<section id="prep-rna-readcount" class="slide fullpage">
+		<p>Read the read count data of all samples</p>
+		<div class="two columns">
+			<pre class="language-r dense next">
+<code># 1. Column (sample) metadata
+rna_meta = rna_manifest_tbl |>
+    column_to_rownames("sample_nickname")
+
+# 2. Data matrix
+rna_readcount_tbls = rna_manifest_tbl |>
+	select(file_id, file_pth) |>
+	# convert a two-column table to a named vector
+    deframe() |>
+    map(read_rna_readcount)  # read all samples
+mat = rna_readcount_tbls |>
+	map_dfc(~ .x[["tpm_unstranded"]]) |>
+	as.matrix()
+
+# 3. Reorder/subset/rename rows and columns
+rownames(mat) = rna_readcount_tbls[[1]]$gene_id
+mat = mat[names(all_genes), ]
+mat = mat[, rna_meta$gdc_file_id]
+colnames(mat) = rownames(rna_meta)</code>
+			</pre>
+			<pre class="language-r dense">
+<code>read_rna_readcount = function(pth) {
+    read_tsv(
+        pth,
+        skip = 1L,
+        col_types = cols(
+            gene_id = col_character(),
+            gene_name = col_skip(),
+            tpm_unstranded = col_double(),
+			...
+        )
+    ) |>
+        # Skip the first 4 rows (N_*)
+        filter(!between(row_number(), 1, 4))
+}
+
+# Test one sample
+example_readcount_tbl = read_rna_readcount(
+	rna_manifest_tbl$file_pth[[1]])</code>
+			</pre>
+		</div>
+	</section>
+
+	<section id="rna-summarizedexperiment" class="slide tight">
+		<h2>RNA-Seq's SummarizedExperiment</h2>
+		<div class="two columns">
+			<pre class="language-r dense">
+<code>rna = SummarizedExperiment(
+    list(tpm_unstranded = mat, ...),
+    rowRanges = all_genes,
+    colData = rna_meta,
+	# Keep relevant details in metadata
+    metadata = list(
+        title = "CPTAC Glioblastoma 2021",
+        data_type = "RNA-Seq transcriptome",
+		...
+    )
+)
+rna |> saveRDS("cptac_gbm_2021_rnaseq.rds")</code>
+			</pre>
+			<div>
+				<pre class="language-r dense output">
+<code>rna
+# class: RangedSummarizedExperiment
+# dim: 60616 108
+# metadata(6): title doi ... data_workflow annotation_source
+# assays(3): tpm_unstranded stranded_second unstranded
+# rownames(60616): ENSG00000223972.5 ENSG00000243485.5 ... ENSG00000210194.1
+#   ENSG00000210196.2
+# rowData names(2): gene_name gene_biotype
+# colnames(108): C3L-00104 C3L-00365 ... PT-WVLH PT-Y8DK
+# colData names(8): sample_type case_id ... gdc_file_id md5sum</code>
+				</pre>
+				<p>
+					Match the dimensions and names of different matrices and data frames
+				</p>
+			</div>
+		</div>
+	</section>
+
+	<section id="prep-dna-methyl" class="slide tight">
+		<h2>Prepare DNA methyl probe beta values</h2>
+		<div class="two columns">
+			<pre class="language-r dense">
+<code># row/feature annotations
+dna_methyl_anno_gr = dna_methyl_anno_tbl |>
+    filter(
+		if_all(c(start, end), ~ !is.na(.x)),
+		probeID %in% good_qual_probe_ids
+	) |>
+    column_to_rownames("probeID") |>
+    makeGRangesFromDataFrame(
+        seqinfo = seqinfo(all_genes),
+        keep.extra.columns = TRUE,
+		# BED file uses 0-based intervals
+		starts.in.df.are.0based = TRUE
+    )
+# column/sample annotations
+dna_methyl_meta = dna_methyl_manifest_tbl |>
+	column_to_rownames("sample_nickname")</code>
+			</pre>
+			<pre class="language-r dense">
+<code># reader function for one sample
+read_dna_methyl_beta_vals = function(pth) {
+    beta_vals = read_tsv(pth, ...) |> deframe()
+    beta_vals[names(dna_methyl_anno_gr)]
+}
+# data matrix (beta values)
+mat = dna_methyl_manifest_tbl |>
+    select(file_id, file_pth) |>
+    deframe() |>
+    map_dfc(read_dna_methyl_beta_vals) |>
+    as.matrix()
+# subset/rename/reorder
+mat = mat[, dna_methyl_meta$gdc_file_id]
+colnames(mat) = rownames(dna_methyl_meta)</code>
+			</pre>
+		</div>
+	</section>
+
+	<section id="dna-methyl-summarizedexperiment" class="slide tight">
+		<h2>DNA methyl's SummarizedExperiment</h2>
+		<div class="two columns">
+			<div>
+				<pre class="language-r dense">
+<code>dna_methyl = SummarizedExperiment(
+    list(beta_val = mat),
+    rowRanges = dna_methyl_anno_gr,
+    colData = dna_methyl_meta,
+    metadata = list(...)
+)
+dna_methyl |>
+	saveRDS("cptac_gbm_2021_dna_methyl.rds")
+</code>
+				</pre>
+				<pre class="language-r dense output">
+<code>dna_methyl
+# class: RangedSummarizedExperiment
+# dim: 760464 97
+# metadata(6): title doi ... data_workflow annotation_source
+# assays(1): beta_val
+# rownames(760464): cg21870274 cg09499020 ... cg14273923 cg16855331
+# rowData names(6): probe_strand gene_names ... CGI CGI_position
+# colnames(97): C3L-00104 C3L-00365 ... C3N-03188 C3N-03473
+# colData names(8): sample_type case_id ... gdc_file_id md5sum</code>
+				</pre>
+			</div>
+			<div>
+				<p>In the subsequent analyses, we just need these files:</p>
+				<ol>
+					<li>SummarizedExperiment objects (RDS)</li>
+					<li>Sample information table (clinical data, classifications) (parquet)</li>
+				</ol>
+				<p>Refer to the slide notes and the full R Markdown notebooks for the complete steps</p>
+			</div>
+		</div>
+		<style>
+			#dna-methyl-summarizedexperiment :is(p, ol) {
+				font-size: 1.25rem;
+			}
+		</style>
+	</section>
+
+	<section class="slide tight">
+		<h2></h2>
+		<div class="two columns">
+			<pre class="language-r dense">
+<code>
+</code>
+			</pre>
+			<pre class="language-r dense">
+<code>
+</code>
+			</pre>
+		</div>
 	</section>
 
 	<section id="x-inactivation" class="slide two columns r33">
