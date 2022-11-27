@@ -37,14 +37,32 @@
 			color: var(--color-on);
 		}
 
+		/* Increase code snippets font weight */
+		.slide pre code {
+			font-weight: 450;
+		}
+
 		pre.dense code {
 			font-size: 0.875rem;
 			line-height: 1.75;
 		}
 
-		.slide pre code {
-			font-weight: 450;
+		pre.output code {
+			font-size: 0.5rem;
 		}
+
+		/* more densely packed page */
+
+		.slide.fullpage {
+			padding-top: 15px;
+		}
+
+		.slide.fullpage p {
+			margin-bottom: 0.5em;
+		}
+
+
+		/* (Bio)stickers */
 
 		.place.top.right.biocsticker {
 			width: 120px;
@@ -1146,6 +1164,145 @@ ht_list = ht1 %v% ht2 %v% col_ha</code>
 				column-gap: 2rem;
 			}
 		</style>
+	</section>
+
+	<section id="prep-rna-gene-annotations" class="slide tight">
+		<h2>Prepare row/feature annotations</h2>
+		<div class="two columns">
+			<pre class="language-r dense">
+<code>edb = EnsDb("EnsDb.Hsapiens.v102.sqlite")
+# Keep only genes in the canonical chromosomes
+gene_filter = AnnotationFilter(
+	~ gene_biotype != "LRG_gene" &
+		seq_name %in% c(1:22, "X", "Y", "MT"))
+all_genes = genes(edb, filter = gene_filter) |>
+	sortSeqlevels() |> sort()
+
+# Rename using gene IDs
+names(all_genes) = all_genes$gene_id_version
+
+# Convert the chromosome styles to UCSC
+# seqnames become chr1...chr22 chrX chrY chrM
+seqlevelsStyle(all_genes) = "UCSC"</code>
+			</pre>
+			<div class="next">
+				<pre class="language-r dense output">
+<code>all_genes
+# GRanges object with 60616 ranges and 2 metadata columns:
+# 	                seqnames      ranges strand |   gene_name           gene_biotype
+# 	                   &lt;Rle&gt;   &lt;IRanges&gt;  &lt;Rle&gt; | &lt;character&gt;            &lt;character&gt;
+# ENSG00000223972.5     chr1 11869-14409      + |     DDX11L1 transcribed_unproces..
+# ENSG00000243485.5     chr1 29554-31109      + | MIR1302-2HG                 lncRNA
+# ENSG00000284332.1     chr1 30366-30503      + |   MIR1302-2                  miRNA
+# ENSG00000268020.3     chr1 52473-53312      + |      OR4G4P unprocessed_pseudogene
+# ENSG00000240361.2     chr1 57598-64116      + |     OR4G11P transcribed_unproces..
+#               ...      ...         ...    ... .         ...                    ...
+# ENSG00000210144.1     chrM   5826-5891      - |       MT-TY                Mt_tRNA
+# ENSG00000210151.2     chrM   7446-7514      - |      MT-TS1                Mt_tRNA
+# ENSG00000198695.2     chrM 14149-14673      - |      MT-ND6         protein_coding
+# ENSG00000210194.1     chrM 14674-14742      - |       MT-TE                Mt_tRNA
+# ENSG00000210196.2     chrM 15956-16023      - |       MT-TP                Mt_tRNA
+# -------
+# seqinfo: 25 sequences (1 circular) from hg38 genome
+</code>
+				</pre>
+				<p>This will be the row (feature) order and annotations of the data matrix</p>
+			</div>
+		</div>
+	</section>
+
+	<section id="prep-rna-readcount" class="slide fullpage">
+		<p>Read the read count data of all samples</p>
+		<div class="two columns">
+			<pre class="language-r dense next">
+<code># 1. Column (sample) metadata
+rna_meta = rna_manifest_tbl |>
+    column_to_rownames("sample_nickname")
+
+# 2. Data matrix
+rna_readcount_tbls = rna_manifest_tbl |>
+	select(file_id, file_pth) |>
+	# convert a two-column table to a named vector
+    deframe() |>
+    map(read_rna_readcount)  # read all samples
+mat = rna_readcount_tbls |>
+	map_dfc(~ .x[["tpm_unstranded"]]) |>
+	as.matrix()
+
+# 3. Reorder/subset/rename rows and columns
+rownames(mat) = rna_readcount_tbls[[1]]$gene_id
+mat = mat[names(all_genes), ]
+mat = mat[, rna_meta$gdc_file_id]
+colnames(mat) = rownames(rna_meta)</code>
+			</pre>
+			<pre class="language-r dense">
+<code>read_rna_readcount = function(pth) {
+    read_tsv(
+        pth,
+        skip = 1L,
+        col_types = cols(
+            gene_id = col_character(),
+            gene_name = col_skip(),
+            tpm_unstranded = col_double(),
+			...
+        )
+    ) |>
+        # Skip the first 4 rows (N_*)
+        filter(!between(row_number(), 1, 4))
+}
+
+# Test one sample
+example_readcount_tbl = read_rna_readcount(
+	rna_manifest_tbl$file_pth[[1]])</code>
+			</pre>
+		</div>
+	</section>
+
+	<section class="slide tight">
+		<h2></h2>
+		<div class="two columns">
+			<pre class="language-r dense">
+<code>rna = SummarizedExperiment(
+    list(tpm_unstranded = mat, ...),
+    rowRanges = all_genes,
+    colData = rna_meta,
+    metadata = list(
+        title = "CPTAC3 Glioblastoma 2021",
+        data_type = "RNA-Seq transcriptome",
+		...
+    )
+)
+</code>
+			</pre>
+			<pre class="language-r dense output">
+<code>
+rna
+# class: RangedSummarizedExperiment
+# dim: 60616 108
+# metadata(6): title doi ... data_workflow annotation_source
+# assays(3): tpm_unstranded stranded_second unstranded
+# rownames(60616): ENSG00000223972.5 ENSG00000243485.5 ... ENSG00000210194.1
+#   ENSG00000210196.2
+# rowData names(2): gene_name gene_biotype
+# colnames(108): C3L-00104 C3L-00365 ... PT-WVLH PT-Y8DK
+# colData names(8): sample_type case_id ... gdc_file_id md5sum
+</code>
+			</pre>
+		</div>
+	</section>
+
+	<section class="slide tight">
+		<h2></h2>
+		<div class="two columns">
+			<pre class="language-r dense">
+<code>
+</code>
+			</pre>
+			<pre class="language-r dense">
+<code>
+</code>
+			</pre>
+		</div>
 	</section>
 
 	<section id="x-inactivation" class="slide two columns r33">
