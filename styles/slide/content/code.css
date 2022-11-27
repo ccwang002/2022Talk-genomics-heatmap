@@ -15,11 +15,6 @@
         var(--slide-left-side) * -1
     );
     padding: 0 0 0 var(--slide-left-side);
-    width: calc(
-        100% +
-        var(--slide-left-side) +
-        var(--slide-right-side)
-    );
     background-color: transparent;
     line-height: 2;
     white-space: pre;

@@ -55,6 +55,7 @@
 		.slide .citation {
 			font-size: 0.8rem;
 			line-height: 1rem;
+    		margin: 0;
 		}
 
 		.slide .citation.left {
@@ -69,9 +70,6 @@
     		text-align: center;
 		}
 
-		.slide .citation {
-    		margin: 0;
-		}
     </style>
 </head>
 <body class="shower list">
@@ -259,7 +257,7 @@ my_df %>%
 	</section>
 
 	<section id="bioconductor" class="slide">
-		<h2><strong>R/Bioconductor</strong>: a powerful ecosystem for genomic analysis</h2>
+		<h2><strong style="font-weight: 400;">R/Bioconductor</strong>: a powerful ecosystem for genomic analysis</h2>
 		<ul>
 			<li>Process and calculate <strong>genomic ranges</strong></li>
 			<li><strong>Query annotations</strong> like genome sequences, genes, and microarray designs</li>
@@ -750,7 +748,6 @@ se = readRDS("my_se.rds")
 				font-size: 2.5rem;
 			}
 			#summarizedexperiment-cheatsheet ul {
-				/* align-self: center; */
 				margin-bottom: 0;
 			}
 		</style>
@@ -825,10 +822,16 @@ my_tbl = my_DF |>
 	</section>
 
 	<section id="genomics-data-vis" class="slide">
-		Gviz, ggbio
-		heatmap
+		<ul>
+			<li>Gviz, ggbio</li>
+			<li>heatmap</li>
+			<li>
 		circos plot
+			</li>
+			<li>
 		rasterization
+			</li>
+		</ul>
 	</section>
 
 	<section id="complexheatmap" class="slide tight">
@@ -843,7 +846,8 @@ my_tbl = my_DF |>
 			</ul>
 		<figure>
 			<img class="fill w"
-				src="pictures/complexheatmap_book_cover.jpg" alt="Cover of the ComplexHeatmap complete reference book">
+					src="pictures/complexheatmap_book_cover.jpg"
+					alt="Cover of the ComplexHeatmap complete reference book">
 			<figcaption class="citation">
 				<a href="https://jokergoo.github.io/ComplexHeatmap-reference/book/">ComplexHeatmap Complete Reference</a>
 				is an extensive guide to the package's design and all of the configurations.
@@ -888,7 +892,7 @@ draw(ht)</code>
 		</div>
 	</section>
 
-	<section class="slide-notes" style="grid-row: span 2">
+	<section class="slide-notes" style="grid-row: span 2;">
 		<h3>Code to generate the example matrix</h3>
 		<p>The code was copied from the <a href="https://jokergoo.github.io/ComplexHeatmap-reference/book/a-single-heatmap.html">first example</a> in the ComplexHeatmap Complete Reference (Chatper 2: A Single Heatmap).</p>
 		<pre class="language-r">
@@ -924,8 +928,9 @@ mat[2:3, 2] = NA_real_</code>
 		<div class="three columns">
 			<pre class="language-r dense">
 <code>my_colors = list(
-    foo1 = hcl.colors(4) |>
-        set_names(LETTERS[1:4]),
+    foo1 = hcl.colors(
+		4, palette = "viridis"
+	) |> set_names(LETTERS[1:4]),
     foo2 = circlize::colorRamp2(
         c(0, 1),
         hcl_palette = "blues"
@@ -1016,6 +1021,38 @@ ht_list = ht1 %v% ht2 %v% col_ha</code>
 
 	<section class="slide">
 		<h2 class="shout">Demo on an example dataset</h2>
+	</section>
+
+	<section id="cptac-gbm-cohort" class="slide tight">
+		<h2>CPTAC glioblastoma 2021 cohort</h2>
+		<figure>
+			<img class="fill w"
+				src="pictures/cptac_gbm_2021_cohort_design.png"
+				alt="Overview of the CPTAC glioblastoma 2021 discovery cohort design and the available data types">
+			<figcaption class="citation right">
+				Data publicly availabile at <abbr title="National Cancer Institute">NCI</abbr>'s <a href="https://gdc.cancer.gov/">Genomic Data Commons (GDC)</a>, <a href="https://pdc.cancer.gov/pdc/">Proteomic Data Commons (PDC)</a>, and <a href="https://www.cancerimagingarchive.net/">Cancer Imaging Archive (TCIA)</a><br>
+				Wang <em>et al.</em> (2021). DOI: <a href="https://pubmed.ncbi.nlm.nih.gov/33577785/">10.1016/j.ccell.2021.01.006</a></figcaption>
+		</figure>
+		<div class="description">
+			<ul>
+				<li><a href="https://proteomics.cancer.gov/programs/cptac">CPTAC</a> prospective collection of treatment naïve glioblastoma (GBM) tumors (n=99)</li>
+				<li><a href="https://www.gtexportal.org/">GTEx</a> brain (frontal cortex) normals (n=10; unmatched)</li>
+			</ul>
+		</div>
+		<style>
+			#cptac-gbm-cohort .description {
+				position: absolute;
+				width: 15rem;
+				bottom: 100px;
+				left: var(--slide-left-side);
+
+				font-size: 0.875rem;
+				line-height: 1.5;
+			}
+			#cptac-gbm-cohort .citation {
+				line-height: 1.5;
+			}
+		</style>
 	</section>
 
 	<section id="x-inactivation" class="slide two columns r33">
