@@ -61,6 +61,15 @@
 			margin-bottom: 0.5em;
 		}
 
+		/* wider page */
+
+		.slide.wider {
+			--slide-right-side: 1rem;
+		}
+
+		.slide.wider .columns {
+			column-gap: 1rem;
+		}
 
 		/* (Bio)stickers */
 
@@ -948,7 +957,7 @@ mat[2:3, 2] = NA_real_</code>
 		</pre>
 	</section>
 
-	<section id="heatmap-annotations" class="slide tight">
+	<section id="heatmap-annotations" class="slide tight wider">
 		<h2>Flexible heatmap annotations</h2>
 		<div class="three columns">
 			<pre class="language-r dense">
@@ -1000,16 +1009,11 @@ draw(ht, merge_legends = TRUE)</code>
 			</figure>
 		</div>
 		<style>
-			#heatmap-annotations {
-				--slide-right-side: 16px;
-			}
 			#heatmap-annotations .columns {
-				column-gap: 1rem;
 				grid-template-columns: 1fr 1fr 350px;
 			}
 			#heatmap-annotations pre code {
 				font-size: 0.75rem;
-				width: 100%;
 			}
 		</style>
 	</section>
@@ -1091,7 +1095,7 @@ ht_list = ht1 %v% ht2 %v% col_ha</code>
 		</ol>
 	</section>
 
-	<section id="download-data-from-gdc" class="slide">
+	<section id="download-data-from-gdc" class="slide wider">
 		<div class="two columns">
 			<div>
 				<h2>GDC data download</h2>
@@ -1117,19 +1121,13 @@ ht_list = ht1 %v% ht2 %v% col_ha</code>
 			</figure>
 		</div>
 		<style>
-			#download-data-from-gdc {
-				--slide-right-side: 1rem;
-			}
-			#download-data-from-gdc .columns {
-				column-gap: 1rem;
-			}
 			#download-data-from-gdc figure {
 				line-height: 1;
 			}
 		</style>
 	</section>
 
-	<section id="download-annotations" class="slide tight">
+	<section id="download-annotations" class="slide tight wider">
 		<h2>Download sample/feature annotations</h2>
 		<div class="two columns r40">
 			<div>
@@ -1140,7 +1138,8 @@ ht_list = ht1 %v% ht2 %v% col_ha</code>
 					</li>
 					<li><strong>Gene annotations</strong> from AnnotationHub (EnsDb): <br>
 						GDC uses GENCODE v36 = Ensembl 102 (<a href="https://annotationhub.bioconductor.org/ahid/AH89180">AH89180</a>)</li>
-					<li>DNA methylation <strong>microarray <a href="https://gdc.cancer.gov/about-data/gdc-data-processing/gdc-reference-files">probe design</a></strong> (Illumina EPIC) and an external <a href="https://zwdzwd.github.io/InfiniumAnnotation">probe annotations</a></li>
+					<li>DNA methylation <strong>microarray <a href="https://gdc.cancer.gov/about-data/gdc-data-processing/gdc-reference-files">probe design</a></strong><br>
+						(Illumina EPIC) and an external <a href="https://zwdzwd.github.io/InfiniumAnnotation">probe annotations</a></li>
 				</ul>
 				<p>See notes for details</p>
 			</div>
@@ -1163,14 +1162,6 @@ ht_list = ht1 %v% ht2 %v% col_ha</code>
 ...</code>
 			</pre>
 		</div>
-		<style>
-			#download-annotations {
-				--slide-right-side: 1rem;
-			}
-			#download-annotations .columns {
-				column-gap: 2rem;
-			}
-		</style>
 	</section>
 
 	<section id="prep-rna-gene-annotations" class="slide tight">
@@ -1385,6 +1376,246 @@ dna_methyl |>
 		</style>
 	</section>
 
+	<section id="dna-methyl-data-qc" class="slide tight wider">
+		<h2>DNA methylation data quality control</h2>
+		<div class="two columns l70">
+			<pre class="language-r dense">
+<code># Check for missing values
+has_measurements = !is.na(assay(dna_methyl))
+per_sample = colSums(has_measurements) / nrow(dna_methyl)
+# C3L-00104 C3L-00365 ...
+# 0.4841965 0.9648767 ...
+plot_tbl = per_sample |>
+    enframe(name = "sample", value = "completeness") |>
+    mutate(sample = fct_reorder(sample, completeness))
+ggplot(plot_tbl, aes(x = sample, y = completeness)) +
+    geom_col()
+
+# Only select top 8k variable probes
+top_var_probe_ids = assay(dna_methyl) |> rowSds() |>
+	order(decreasing = TRUE) |> head(8000)
+dna_methyl = dna_methyl[top_var_probe_ids, ] |>
+	sort(ignore.strand = TRUE) </code>
+			</pre>
+			<figure class="next">
+				<img class="fill w"
+					src="pictures/demo_dna_methyl_per_sample_qc.png"
+					alt="Bar plot of the percentage of the DNA methylation probes with measurements per sample in the cohort.">
+			</figure>
+		</div>
+		<style>
+			#dna-methyl-data-qc figure {
+				align-self: center;
+			}
+		</style>
+	</section>
+
+	<section id="dna-methyl-explore" class="slide tight wider">
+		<h2>DNA methylation data </h2>
+		<div class="two columns">
+			<pre class="language-r dense">
+<code>beta_val_col_fun = colorRamp2(
+	c(0, 1),
+	hcl_palette = "viridis"
+)
+ht = Heatmap(
+	t(assay(dna_methyl)),
+	name = "beta_val",
+	col = beta_val_col_fun,
+
+	cluster_columns = FALSE,
+	# Split probes by chromosomes
+	column_split = dna_methyl |>
+		seqnames(),
+	show_column_names = FALSE
+)
+draw(ht)</code>
+			</pre>
+			<figure class="next">
+				<figcaption class="citation center">What patterns do you find?</figcaption>
+				<img class="fill w"
+					src="pictures/demo_genome_wide_dna_methyl_heatmap.png"
+					alt="DNA methylation genome-wide landscape of the cohort">
+			</figure>
+		</div>
+		<style>
+			#dna-methyl-explore .columns {
+				grid-template-columns: 3fr 7fr;
+			}
+			#dna-methyl-explore figure {
+				align-self: center;
+			}
+		</style>
+	</section>
+
+	<section id="x-inactivation" class="slide two columns r33">
+		<div>
+			<h2>X-inactivation</h2>
+			<ul>
+				<li>One X chromosome of female mammals will be <a href="https://en.wikipedia.org/wiki/X-inactivation">inactivated randomly</a>, leading to compacted chromosome and high DNA methylation</li>
+				<li><a href="https://en.wikipedia.org/wiki/Calico_cat">Calico cat</a> has a tri-color coat because the orange pigment encoding gene locates at X chromosome</li>
+				<li>Sex related genes: XIST, DDX3Y, RPS4Y1</li>
+				<li>Determine the sex of our samples</li>
+			</ul>
+		</div>
+		<figure>
+			<img class="fill w"
+				src="pictures/wikimedia_a_calico_cat.jpg"
+				alt="A calico cat sitting on an indoor porch">
+			<figcaption class="citation">
+				<a href="https://commons.wikimedia.org/wiki/File:A_Calico_cat.jpg">Ellisn95</a>,
+				<a href="https://creativecommons.org/licenses/by-sa/4.0">CC BY-SA 4.0</a>,
+				via Wikimedia Commons
+			</figcaption>
+		</figure>
+	</section>
+
+	<section id="sex-related-gene-expression" class="slide tight wider">
+		<h2>Expression of sex related genes</h2>
+		<div class="two columns">
+			<pre class="language-r dense">
+<code>genes = c("XIST", "DDX3Y", "RPS4Y1")
+rna_sex = rna |> subset(gene_name %in% genes)
+rownames(rna_sex) = rowRanges(rna_sex)$gene_name
+# Transform data matrix to ggplot2's long format
+plot_tbl = t(assay(rna_sex, "tpm_unstranded")) |>
+    as_tibble(rownames = "sample_nickname") |>
+    pivot_longer(
+        cols = -sample_nickname,
+        names_to = "symbol",
+        values_to = "tpm"
+    ) |>
+    mutate(expr = log2(tpm + 1)) |>
+    left_join(sample_info_tbl)
+
+ggplot(plot_tbl, aes(x = symbol, y = expr, color = sex)) +
+    geom_quasirandom(groupOnX = TRUE)</code>
+			</pre>
+			<figure class="next">
+				<img class="fill w"
+					src="pictures/demo_sex_related_gene_expression.png"
+					alt="Dot plot of the sex related gene expression grouped by the sex status obtained from the clinical data">
+				<figcaption class="citation center">Sex status in the clinical data matches the gene expression</figcaption>
+			</figure>
+		</div>
+		<style>
+			#sex-related-gene-expression .columns {
+				grid-template-columns: 11fr 9fr;
+			}
+			#sex-related-gene-expression figure {
+				align-self: center;
+			}
+		</style>
+	</section>
+
+	<section id="combine-rna-dna-methyl" class="slide tight">
+		<h2>Combine RNA and DNA methyl data together</h2>
+		<div class="two columns l60">
+			<div>
+				<pre class="language-r dense">
+<code># Collect DNA methyl data and sample info
+dna_methyl_chrX = dna_methyl_top_var |>
+	subset(seqnames == "chrX")
+anno_df = sample_info_tbl |>
+	column_to_rownames("sample_nickname")
+# 1. Subset/reorder all data by shared samples
+shared_samples = colnames(dna_methyl_chrX) |>
+	intersect(colnames(rna_sex))
+anno_df = anno_df[shared_samples, ]
+dna_methyl_chrX = dna_methyl_chrX[, shared_samples]
+rna_sex = rna_sex[, shared_samples]
+
+# 2. Define color mapping
+my_colors = list(
+	sex = c(Female = "#8700F9",
+			Male = "#00C4AA")
+)</code>
+				</pre>
+			</div>
+			<pre class="language-r dense">
+<code># 3. Create 1 annotation and 2 heatmaps
+row_ha = rowAnnotation(
+    sex = anno_df$sex,
+    col = my_colors  # easier to reuse
+)
+
+ht_dna_methyl = Heatmap(
+	# one row of heatmap is a sample
+    t(assay(dna_methyl_chrX)),
+    name = "dna_methyl_beta",
+    col = beta_val_col_fun,
+    show_column_names = FALSE,
+    show_row_dend = FALSE,
+	# Rasterize large heatmap
+    use_raster = TRUE,
+	raster_quality = 2
+)
+</code>
+			</pre>
+		</div>
+		<style>
+			#combine-rna-dna-methyl h2 {
+				font-size: 2.5rem;
+			}
+			#combine-rna-dna-methyl p {
+				font-size: 1.5rem;
+				margin-bottom: 0.5em;
+			}
+		</style>
+	</section>
+
+	<section id="combine-rna-dna-methyl-result" class="slide tight wider">
+		<h2>Combined heatmaps with annotations</h2>
+		<div class="two columns l20">
+			<pre class="language-r dense">
+<code>ht_rna = Heatmap(
+    log2(t(assay(rna_sex)) + 1),
+    name = "rna",
+    col = colorRamp2(
+		c(0 , 7),
+		hcl_palette = "inferno"
+	),
+    cluster_columns = FALSE,
+    # Fix heatmap cell size
+    width = unit(4, "mm") * 3,
+	# Add row annotation
+    right_annotation = row_ha
+)
+# Combine two heatmaps
+ht_list = ht_dna_methyl + ht_rna
+draw(ht_list, merge_legends = TRUE)</code>
+			</pre>
+			<figure>
+				<img class="fill w"
+					src="pictures/demo_combined_heatmap_sex_related.png"
+					alt="">
+			</figure>
+		</div>
+		<style>
+			#combine-rna-dna-methyl-result figure {
+				align-self: center;
+			}
+		</style>
+	</section>
+
+	<section id="data-overview-heatmap" class="slide tight wider">
+		<h2>Data overview heatmap</h2>
+		<div class="two columns">
+			<div></div>
+			<figure>
+				<img class="fill w"
+					src="pictures/demo_data_overview_heatmap.png"
+					alt="">
+			</figure>
+		</div>
+		<style>
+			#data-overview-heatmap .columns {
+				grid-template-columns: 3fr 7fr;
+			}
+		</style>
+	</section>
+
+	<!-- Two column template -->
 	<section class="slide tight">
 		<h2></h2>
 		<div class="two columns">
@@ -1399,21 +1630,6 @@ dna_methyl |>
 		</div>
 	</section>
 
-	<section id="x-inactivation" class="slide two columns r33">
-		<div>
-			<h2>X-inactivation</h2>
-		</div>
-		<figure>
-			<img class="fill w"
-				src="pictures/wikimedia_a_calico_cat.jpg"
-				alt="A calico cat sitting on an indoor porch">
-			<figcaption class="citation">
-				<a href="https://commons.wikimedia.org/wiki/File:A_Calico_cat.jpg">Ellisn95</a>,
-				<a href="https://creativecommons.org/licenses/by-sa/4.0">CC BY-SA 4.0</a>,
-				via Wikimedia Commons
-			</figcaption>
-		</figure>
-	</section>
 
 	<section id="data-overview-final" class="slide">
 		<div class="two columns">
