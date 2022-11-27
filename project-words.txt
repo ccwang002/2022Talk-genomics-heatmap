@@ -1,5 +1,6 @@
 Bioc
 cbind
+ccell
 ccwang
 circlize
 CPTAC
@@ -7,6 +8,9 @@ DALL
 dend
 dendrogram
 dplyr
+tbls
+deframe
+unstranded
 Ellisn
 ENSE
 Ensembl
@@ -45,6 +49,7 @@ rtracklayer
 runif
 Sagalaev
 TCGA
+TCIA
 tibble
 UCSC
 unlist
