@@ -1091,7 +1091,6 @@ ht_list = ht1 %v% ht2 %v% col_ha</code>
 				</figcaption>
 			</figure>
 		</div>
-
 		<style>
 			#download-data-from-gdc {
 				--slide-right-side: 1rem;
@@ -1101,6 +1100,50 @@ ht_list = ht1 %v% ht2 %v% col_ha</code>
 			}
 			#download-data-from-gdc figure {
 				line-height: 1;
+			}
+		</style>
+	</section>
+
+	<section id="download-annotations" class="slide tight">
+		<h2>Download sample/feature annotations</h2>
+		<div class="two columns r40">
+			<div>
+				<ul>
+					<li>
+						<strong>Clinical data and sample classifications</strong> from the <a href="https://pubmed.ncbi.nlm.nih.gov/33577785/">manuscript</a>'s Supplemental Table S1;<br>
+						combined the tables into a Parquet file
+					</li>
+					<li><strong>Gene annotations</strong> from AnnotationHub (EnsDb): <br>
+						GDC uses GENCODE v36 = Ensembl 102 (<a href="https://annotationhub.bioconductor.org/ahid/AH89180">AH89180</a>)</li>
+					<li>DNA methylation <strong>microarray <a href="https://gdc.cancer.gov/about-data/gdc-data-processing/gdc-reference-files">probe design</a></strong> (Illumina EPIC) and an external <a href="https://zwdzwd.github.io/InfiniumAnnotation">probe annotations</a></li>
+				</ul>
+				<p>See notes for details</p>
+			</div>
+			<pre class="language-text dense">
+				<code># gdc-client download \
+#   -m cptac_gbm_2021_manifest.tsv \
+#   -d /path/to/gdc_downloads
+/path/to/gdc_downloads
+├── &lt;file_id UUID&gt;
+│  ├── ...star_gene_counts.tsv
+...  or...sesame.level3betas.txt
+
+/path/to/project_root
+├── gdc_manifest_plus_metadata.tsv
+├── cptac_gbm_2021_table_s1.xlsx
+├── cptac_gbm_2021_sample_info.parquet
+├── EnsDb.Hsapiens.v102.sqlite
+├── EPIC.hg38.manifest.gencode.v36.tsv.gz
+├── EPIC.hg38.mask.tsv.gz
+...</code>
+			</pre>
+		</div>
+		<style>
+			#download-annotations {
+				--slide-right-side: 1rem;
+			}
+			#download-annotations .columns {
+				column-gap: 2rem;
 			}
 		</style>
 	</section>
