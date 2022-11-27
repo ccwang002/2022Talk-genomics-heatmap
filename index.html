@@ -61,6 +61,15 @@
 			margin-bottom: 0.5em;
 		}
 
+		/* wider page */
+
+		.slide.wider {
+			--slide-right-side: 1rem;
+		}
+
+		.slide.wider .columns {
+			column-gap: 1rem;
+		}
 
 		/* (Bio)stickers */
 
@@ -948,7 +957,7 @@ mat[2:3, 2] = NA_real_</code>
 		</pre>
 	</section>
 
-	<section id="heatmap-annotations" class="slide tight">
+	<section id="heatmap-annotations" class="slide tight wider">
 		<h2>Flexible heatmap annotations</h2>
 		<div class="three columns">
 			<pre class="language-r dense">
@@ -1000,16 +1009,11 @@ draw(ht, merge_legends = TRUE)</code>
 			</figure>
 		</div>
 		<style>
-			#heatmap-annotations {
-				--slide-right-side: 16px;
-			}
 			#heatmap-annotations .columns {
-				column-gap: 1rem;
 				grid-template-columns: 1fr 1fr 350px;
 			}
 			#heatmap-annotations pre code {
 				font-size: 0.75rem;
-				width: 100%;
 			}
 		</style>
 	</section>
@@ -1091,7 +1095,7 @@ ht_list = ht1 %v% ht2 %v% col_ha</code>
 		</ol>
 	</section>
 
-	<section id="download-data-from-gdc" class="slide">
+	<section id="download-data-from-gdc" class="slide wider">
 		<div class="two columns">
 			<div>
 				<h2>GDC data download</h2>
@@ -1117,19 +1121,13 @@ ht_list = ht1 %v% ht2 %v% col_ha</code>
 			</figure>
 		</div>
 		<style>
-			#download-data-from-gdc {
-				--slide-right-side: 1rem;
-			}
-			#download-data-from-gdc .columns {
-				column-gap: 1rem;
-			}
 			#download-data-from-gdc figure {
 				line-height: 1;
 			}
 		</style>
 	</section>
 
-	<section id="download-annotations" class="slide tight">
+	<section id="download-annotations" class="slide tight wider">
 		<h2>Download sample/feature annotations</h2>
 		<div class="two columns r40">
 			<div>
@@ -1140,7 +1138,8 @@ ht_list = ht1 %v% ht2 %v% col_ha</code>
 					</li>
 					<li><strong>Gene annotations</strong> from AnnotationHub (EnsDb): <br>
 						GDC uses GENCODE v36 = Ensembl 102 (<a href="https://annotationhub.bioconductor.org/ahid/AH89180">AH89180</a>)</li>
-					<li>DNA methylation <strong>microarray <a href="https://gdc.cancer.gov/about-data/gdc-data-processing/gdc-reference-files">probe design</a></strong> (Illumina EPIC) and an external <a href="https://zwdzwd.github.io/InfiniumAnnotation">probe annotations</a></li>
+					<li>DNA methylation <strong>microarray <a href="https://gdc.cancer.gov/about-data/gdc-data-processing/gdc-reference-files">probe design</a></strong><br>
+						(Illumina EPIC) and an external <a href="https://zwdzwd.github.io/InfiniumAnnotation">probe annotations</a></li>
 				</ul>
 				<p>See notes for details</p>
 			</div>
@@ -1163,14 +1162,6 @@ ht_list = ht1 %v% ht2 %v% col_ha</code>
 ...</code>
 			</pre>
 		</div>
-		<style>
-			#download-annotations {
-				--slide-right-side: 1rem;
-			}
-			#download-annotations .columns {
-				column-gap: 2rem;
-			}
-		</style>
 	</section>
 
 	<section id="prep-rna-gene-annotations" class="slide tight">
@@ -1385,7 +1376,7 @@ dna_methyl |>
 		</style>
 	</section>
 
-	<section id="dna-methyl-data-qc" class="slide tight">
+	<section id="dna-methyl-data-qc" class="slide tight wider">
 		<h2>DNA methylation data quality control</h2>
 		<div class="two columns l70">
 			<pre class="language-r dense">
@@ -1413,19 +1404,13 @@ dna_methyl = dna_methyl[top_var_probe_ids, ] |>
 			</figure>
 		</div>
 		<style>
-			#dna-methyl-data-qc {
-				--slide-right-side: 1rem;
-			}
-			#dna-methyl-data-qc .columns {
-				column-gap: 1rem;
-			}
 			#dna-methyl-data-qc figure {
 				align-self: center;
 			}
 		</style>
 	</section>
 
-	<section id="dna-methyl-explore" class="slide tight">
+	<section id="dna-methyl-explore" class="slide tight wider">
 		<h2>DNA methylation data </h2>
 		<div class="two columns">
 			<pre class="language-r dense">
@@ -1454,11 +1439,7 @@ draw(ht)</code>
 			</figure>
 		</div>
 		<style>
-			#dna-methyl-explore {
-				--slide-right-side: 1rem;
-			}
 			#dna-methyl-explore .columns {
-				column-gap: 1rem;
 				grid-template-columns: 3fr 7fr;
 			}
 			#dna-methyl-explore figure {
@@ -1489,7 +1470,7 @@ draw(ht)</code>
 		</figure>
 	</section>
 
-	<section id="sex-related-gene-expression" class="slide tight">
+	<section id="sex-related-gene-expression" class="slide tight wider">
 		<h2>Expression of sex related genes</h2>
 		<div class="two columns">
 			<pre class="language-r dense">
@@ -1518,11 +1499,7 @@ ggplot(plot_tbl, aes(x = symbol, y = expr, color = sex)) +
 			</figure>
 		</div>
 		<style>
-			#sex-related-gene-expression {
-				--slide-right-side: 1rem;
-			}
 			#sex-related-gene-expression .columns {
-				column-gap: 1rem;
 				grid-template-columns: 11fr 9fr;
 			}
 			#sex-related-gene-expression figure {
@@ -1531,7 +1508,114 @@ ggplot(plot_tbl, aes(x = symbol, y = expr, color = sex)) +
 		</style>
 	</section>
 
-	<!-- Two column template  -->
+	<section id="combine-rna-dna-methyl" class="slide tight">
+		<h2>Combine RNA and DNA methyl data together</h2>
+		<div class="two columns l60">
+			<div>
+				<pre class="language-r dense">
+<code># Collect DNA methyl data and sample info
+dna_methyl_chrX = dna_methyl_top_var |>
+	subset(seqnames == "chrX")
+anno_df = sample_info_tbl |>
+	column_to_rownames("sample_nickname")
+# 1. Subset/reorder all data by shared samples
+shared_samples = colnames(dna_methyl_chrX) |>
+	intersect(colnames(rna_sex))
+anno_df = anno_df[shared_samples, ]
+dna_methyl_chrX = dna_methyl_chrX[, shared_samples]
+rna_sex = rna_sex[, shared_samples]
+
+# 2. Define color mapping
+my_colors = list(
+	sex = c(Female = "#8700F9",
+			Male = "#00C4AA")
+)</code>
+				</pre>
+			</div>
+			<pre class="language-r dense">
+<code># 3. Create 1 annotation and 2 heatmaps
+row_ha = rowAnnotation(
+    sex = anno_df$sex,
+    col = my_colors  # easier to reuse
+)
+
+ht_dna_methyl = Heatmap(
+	# one row of heatmap is a sample
+    t(assay(dna_methyl_chrX)),
+    name = "dna_methyl_beta",
+    col = beta_val_col_fun,
+    show_column_names = FALSE,
+    show_row_dend = FALSE,
+	# Rasterize large heatmap
+    use_raster = TRUE,
+	raster_quality = 2
+)
+</code>
+			</pre>
+		</div>
+		<style>
+			#combine-rna-dna-methyl h2 {
+				font-size: 2.5rem;
+			}
+			#combine-rna-dna-methyl p {
+				font-size: 1.5rem;
+				margin-bottom: 0.5em;
+			}
+		</style>
+	</section>
+
+	<section id="combine-rna-dna-methyl-result" class="slide tight wider">
+		<h2>Combined heatmaps with annotations</h2>
+		<div class="two columns l20">
+			<pre class="language-r dense">
+<code>ht_rna = Heatmap(
+    log2(t(assay(rna_sex)) + 1),
+    name = "rna",
+    col = colorRamp2(
+		c(0 , 7),
+		hcl_palette = "inferno"
+	),
+    cluster_columns = FALSE,
+    # Fix heatmap cell size
+    width = unit(4, "mm") * 3,
+	# Add row annotation
+    right_annotation = row_ha
+)
+# Combine two heatmaps
+ht_list = ht_dna_methyl + ht_rna
+draw(ht_list, merge_legends = TRUE)</code>
+			</pre>
+			<figure>
+				<img class="fill w"
+					src="pictures/demo_combined_heatmap_sex_related.png"
+					alt="">
+			</figure>
+		</div>
+		<style>
+			#combine-rna-dna-methyl-result figure {
+				align-self: center;
+			}
+		</style>
+	</section>
+
+	<section id="data-overview-heatmap" class="slide tight wider">
+		<h2>Data overview heatmap</h2>
+		<div class="two columns">
+			<div></div>
+			<figure>
+				<img class="fill w"
+					src="pictures/demo_data_overview_heatmap.png"
+					alt="">
+			</figure>
+		</div>
+		<style>
+			#data-overview-heatmap .columns {
+				grid-template-columns: 3fr 7fr;
+			}
+		</style>
+	</section>
+
+	<!-- Two column template -->
 	<section class="slide tight">
 		<h2></h2>
 		<div class="two columns">
