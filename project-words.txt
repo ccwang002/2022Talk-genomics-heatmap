@@ -34,6 +34,7 @@ MGMT
 omics
 pmap
 proteogenomics
+Proteomic
 purrr
 RABL2B
 rasterization
