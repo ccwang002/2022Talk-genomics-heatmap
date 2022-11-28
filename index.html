@@ -1211,7 +1211,7 @@ ht_list = ht1 %v% ht2 %v% col_ha</code>
 	</section>
 
 	<section id="prep-rna-gene-annotations" class="slide tight">
-		<h2>Prepare row/feature annotations</h2>
+		<h2>Prepare RNA-seq's gene annotations</h2>
 		<div class="two columns">
 			<pre class="language-r dense">
 <code>edb = EnsDb("EnsDb.Hsapiens.v102.sqlite")
@@ -1271,7 +1271,7 @@ seqlevelsStyle(all_genes) = "UCSC"</code>
 	</section>
 
 	<section id="prep-rna-readcount" class="slide fullpage">
-		<p>Read the read count data of all samples</p>
+		<p>Read the RNA-seq read count data of all samples</p>
 		<div class="two columns">
 			<pre class="language-r dense next">
 <code># 1. Column (sample) metadata
@@ -1347,7 +1347,7 @@ rna |> saveRDS("cptac_gbm_2021_rnaseq.rds")</code>
 # colnames(108): C3L-00104 C3L-00365 ... PT-WVLH PT-Y8DK
 # colData names(8): sample_type case_id ... gdc_file_id md5sum</code>
 				</pre>
-				<p class="notes">
+				<p class="notes next">
 					It's important to always <strong>match the dimensions and names</strong> across all the matrices and data frames (<code>rowData</code> or <code>rowRanges</code>, <code>colData</code>, and <code>assay</code>)
 				</p>
 			</div>
@@ -1391,7 +1391,7 @@ dna_methyl_anno_gr = dna_methyl_anno_tbl |>
 dna_methyl_meta = dna_methyl_manifest_tbl |>
 	column_to_rownames("sample_nickname")</code>
 			</pre>
-			<pre class="language-r dense">
+			<pre class="language-r dense next">
 <code># reader function for one sample
 read_dna_methyl_beta_vals = function(pth) {
     beta_vals = read_tsv(pth, ...) |> deframe()
