@@ -222,7 +222,16 @@ my_df %>%
 	subset(col_A != 1) %>%
 	transform(col_B = col_A + 3)</code>
 		</pre>
-	</section>
+		<p>
+			To many people (including me), there will steps in the instructions as large as the ones in "how to draw an owl" in the slides.
+			This is intentional, because I don't want to cover all the technical details in this talk.
+			There are far better in-depth tutorials and guides for each package and topic.
+			I will provide links to those materials in the slides and the slide notes.
+		</p>
+		<p>
+			I hope today we can all know the tools and directions, then draw the basic circles of the owl 🦉.
+		</p>
+		</section>
 
 	<section id="how-to-draw-an-owl" class="slide">
 		<img class="place center"
@@ -593,9 +602,10 @@ grl[, "tx_biotype"]</code>
 		</style>
 	</section>
 
-	<section id="genomicranges-other-ways" class="slide">
-		<h2>Other ways to construct a GRanges object</h2>
+	<section id="genomicranges-ways-to-create" class="slide">
+		<h2>Ways to construct a GRanges object</h2>
 		<ul>
+			<li>Query result of an genome reference/annotation</li>
 			<li>From a data frame: <code>makeGRangesFromDataFrame</code></li>
 			<li>From external files (BED, GTF, and etc): use <a href="https://bioconductor.org/packages/release/bioc/html/rtracklayer.html">rtracklayer</a> package</li>
 		</ul>
@@ -787,9 +797,9 @@ se = readRDS("my_se.rds")
 		<ul>
 			<li>I find <a href="https://www.tidyverse.org/">tidyverse</a>'s verbs easy to learn and use, personally</li>
 			<li>Bioconductor and tidyverse are two <em>separate</em> ecosystems</li>
-			<li>Function overrides are common (e.g. <code>select()</code>, <code>filter()</code>)</li>
-			<li><code>DataFrame</code> (Bioconductor), <code>tibble</code> (tidyverse), <code>data.frame</code> are all different classes with slightly different behaviors (e.g., row names)</li>
-			<li>Packages like <a href="https://sa-lee.github.io/plyranges/index.html">plyranges</a> and <a href="https://stemangiola.github.io/tidybulk/">tidybulk</a> introduces "verbs" to Bioconductor classes</li>
+			<li class="next">Function overrides are common (e.g. <code>select()</code>, <code>filter()</code>)</li>
+			<li class="next"><code>DataFrame</code> (Bioconductor), <code>tibble</code> (tidyverse), <code>data.frame</code> are all different classes with slightly different behaviors (e.g., row names)</li>
+			<li class="next">Packages like <a href="https://sa-lee.github.io/plyranges/index.html">plyranges</a> and <a href="https://stemangiola.github.io/tidybulk/">tidybulk</a> introduces "verbs" to Bioconductor classes (still an ongoing process)</li>
 		</ul>
 		<img class="place top right biocsticker"
 			src="pictures/tidyverse_sticker.png"
@@ -821,9 +831,9 @@ my_tbl = my_DF |>
 	<section id="purrr" class="slide">
 		<h2>purrr's map functions are handy to process many samples in the same way</h2>
 		<ul>
-			<li>Usecases: read the specific format of a pipeline output</li>
+			<li>My common use case: read the specific format of a pipeline output for all samples</li>
 			<li><a href="https://purrr.tidyverse.org/">purrr</a> provides a consistent interface to eliminate most for-loops:
-				<ul>
+				<ul class="next">
 					<li><code>my_list |> map(my_fun)</code>: the most basic form</li>
 					<li><code>my_list |> imap(...)</code>:
 						also pass the list key/name to the function</li>
@@ -847,12 +857,19 @@ my_tbl = my_DF |>
 	<section id="bioconductor-learning-resources" class="slide">
 		<h2>Ways to learn Bioconductor</h2>
 		<ul>
-			<li><a href="https://www.bioconductor.org/help/package-vignettes/">Package vignettes</a> are great to get started with a new package</li>
-			<li>Bioconductor <a href="https://www.bioconductor.org/packages/release/workflows/">workflows</a> and <a href="https://www.bioconductor.org/help/course-materials/">courses</a> integrate multiple packages over a topic, such as <a href="https://www.bioconductor.org/packages/release/workflows/vignettes/annotation/inst/doc/Annotation_Resources.html">annotation</a></li>
+			<li>
+				<a href="https://www.bioconductor.org/help/package-vignettes/">Package vignettes</a>
+				are great to get started with a new package
+			</li>
+			<li>
+				Bioconductor <a href="https://www.bioconductor.org/packages/release/workflows/">workflows</a> and <a href="https://www.bioconductor.org/help/course-materials/">courses</a> integrate multiple packages over a topic, such as <a href="https://www.bioconductor.org/packages/release/workflows/vignettes/annotation/inst/doc/Annotation_Resources.html">annotation</a> and <a href="https://www.bioconductor.org/packages/release/workflows/vignettes/rnaseqGene/inst/doc/rnaseqGene.html">RNA-seq gene-level analysis</a>
+			</li>
 			<li><a href="https://genomicsclass.github.io/book/">PH525x series - Biomedical Data Science</a> by Rafael Irizarry and Michael Love</li>
 			<li><a href="https://www.huber.embl.de/msmb/">Modern Statistics for Modern Biology</a> by Susan Holmes and Wolfgang Huber</li>
-			<li><a href="https://blog.liang2.tw/tag/bioconductor/">My blog posts</a> about my usage and experience of R/Bioconductor</li>
 		</ul>
+		<img class="place top right biocsticker"
+			src="pictures/Bioconductor_BiocSticker.png"
+			alt="Hexagon sticker for Bioconductor">
 	</section>
 
 	<section id="genomics-data-vis" class="slide wider tight">
@@ -865,16 +882,16 @@ my_tbl = my_DF |>
 					and
 					<a href="https://bioconductor.org/packages/release/bioc/html/ggbio.html">ggbio</a>
 				</li>
-				<li>
+				<li class="next">
 					<strong>Heatmaps</strong>, a basic/naive way to dump high dimensional data in one plot and identify large trends:
 					<a href="https://bioconductor.org/packages/release/bioc/html/ComplexHeatmap.html">ComplexHeatmap</a>
 				</li>
-				<li>
+				<li class="next">
 					<strong>Circular plots</strong> (<a href="https://en.wikipedia.org/wiki/Chord_diagram_(information_visualization)">chord diagram</a>), inter-connections at a longer range:
 					<a href="https://jokergoo.github.io/circlize_book/book/">circlize</a>,
 					<a href="https://circos.ca">circos</a>
 				</li>
-				<li><strong>Rasterization</strong>: <a href="https://cran.r-project.org/package=ggrastr">ggrastr</a></li>
+				<li class="next"><strong>Rasterization</strong>: <a href="https://cran.r-project.org/package=ggrastr">ggrastr</a></li>
 			</ul>
 			<figure>
 				<img class="fill w"
@@ -915,7 +932,7 @@ my_tbl = my_DF |>
 		</style>
 	</section>
 
-	<section id="hello-heatmap" class="slide">
+	<section id="hello-heatmap" class="slide tight">
 		<h2>Hello, heatmap</h2>
 		<div class="two columns">
 			<pre class="language-r dense">
@@ -975,9 +992,9 @@ mat[2:3, 2] = NA_real_</code>
 	</section>
 
 	<section id="heatmap-annotations" class="slide tight wider">
-		<h2>Flexible heatmap annotations</h2>
+		<h2>Add some heatmap annotations</h2>
 		<div class="three columns">
-			<pre class="language-r dense">
+			<pre class="language-r dense next">
 <code>my_colors = list(
     foo1 = hcl.colors(
 		4, palette = "viridis"
