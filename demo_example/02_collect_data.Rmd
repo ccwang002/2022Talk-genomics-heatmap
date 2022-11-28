@@ -1,0 +1,373 @@
+---
+title: "Collect NCI GDC's data"
+author: "Liang-Bo Wang"
+date: "2022-11-22"
+output: 
+    html_document:
+        df_print: paged
+---
+
+```{r setup, include=FALSE}
+library(here)
+library(duckdb)
+library(SummarizedExperiment)
+library(ensembldb)
+library(arrow)
+library(tidyverse)
+```
+
+```{r}
+folder_to_gdc_downloads = '~/Downloads/gdc_downloads/'
+
+sample_info_tbl = read_parquet('./cptac_gbm_2021_sample_info.parquet')
+rna_manifest_tbl = read_tsv('./cptac_gbm_2021_rnaseq_gdc_manifest.tsv')
+dna_methyl_manifest_tbl = read_tsv('./cptac_gbm_2021_dna_methyl_gdc_manifest.tsv')
+```
+
+
+
+
+## RNA-seq read counts
+
+### Gene annotation
+GENCODE v36 == Ensembl v102. We download the annotation from AnnotationHub [EnsDb.Hsapiens.v102.sqlite](https://bioconductorhubs.blob.core.windows.net/annotationhub/AHEnsDbs/v102/EnsDb.Hsapiens.v102.sqlite).
+
+
+```
+edb = EnsDb('EnsDb.Hsapiens.v102.sqlite')
+edb
+```
+
+```{r}
+conn = dbConnect(
+    duckdb::duckdb(), 
+    dbdir=here('convert_ensdb_v102_gencode_v36/ensdb_v102.duckdb'), 
+    read_only=TRUE
+)
+edb = EnsDb(conn)
+edb
+```
+
+```{r}
+all_genes = genes(
+    edb, 
+    filter = AnnotationFilter(
+        ~ gene_biotype != "LRG_gene" & 
+            seq_name %in% c(1:22, "X", "Y", "MT")
+    )
+) |> 
+    sortSeqlevels() |> 
+    sort()
+names(all_genes) = all_genes$gene_id_version
+mcols(all_genes) = mcols(all_genes)[, c("gene_name", "gene_biotype")]
+# Convert the chromosome styles to UCSC
+seqlevelsStyle(all_genes) = "UCSC"
+all_genes
+```
+
+
+### Sample metadata (column DataFrame)
+```{r}
+rna_manifest_tbl |> glimpse()
+```
+
+Construct the file path
+```{r}
+rna_manifest_tbl = rna_manifest_tbl |> 
+    group_by(file_id, aliquot_submitter_id) |> 
+    arrange(sample_submitter_id) |> 
+    mutate(sample_ids = str_c(sort(sample_submitter_id), collapse = ",")) |>
+    ungroup() |> 
+    distinct(file_id, aliquot_submitter_id, .keep_all = TRUE) |> 
+    mutate(file_pth = fs::path(folder_to_gdc_downloads, file_id, file_name))
+
+all(fs::file_exists(rna_manifest_tbl$file_pth))
+```
+
+```{r}
+rna_meta = rna_manifest_tbl |> 
+    select(
+        sample_type,
+        case_id = case_submitter_id,
+        sample_ids, 
+        aliquot_id = aliquot_submitter_id,
+        gdc_case_id = case_id, 
+        gdc_aliquot_id = aliquot_id,
+        gdc_file_id = file_id,
+        md5sum
+    ) |> 
+    mutate(
+        sample_nickname = case_when(
+            sample_type == "Primary Tumor" ~ case_id,
+            sample_type == "Solid Tissue Normal" ~ str_c("PT-", str_sub(case_id, start = 6L, end = 9L))
+        )
+    ) |> 
+    relocate(sample_nickname) |> 
+    arrange(sample_nickname) |> 
+    column_to_rownames("sample_nickname") 
+
+rna_meta |> head()
+```
+
+
+### Read files
+```{r}
+read_rna_readcount = function(pth) {
+    read_tsv(
+        pth,
+        skip = 1L,
+        col_types = cols(
+            gene_id = col_character(),
+            gene_name = col_skip(),
+            gene_type = col_skip(),
+            unstranded = col_double(),
+            stranded_first = col_skip(),
+            stranded_second = col_double(),
+            tpm_unstranded = col_double(),
+            fpkm_unstranded = col_skip(),
+            fpkm_uq_unstranded = col_skip()
+        )
+    ) |> 
+        # Skip the first 4 rows (N_unmapped, N_multimapping, N_noFeature, N_ambiguous)
+        filter(!between(row_number(), 1, 4))
+}
+```
+
+Test by reading a sample
+```{r}
+readcount_tbl = read_rna_readcount(rna_manifest_tbl$file_pth[[1]])
+readcount_tbl |> head()
+```
+
+Compare the gene IDs in the data and in the annotation
+```{r}
+nrow(readcount_tbl)
+genes_only_in_data = setdiff(readcount_tbl$gene_id, names(all_genes))
+genes_only_in_data |> length()
+genes_only_in_data |> head()
+
+genes_only_in_annotation = setdiff(names(all_genes), readcount_tbl$gene_id)
+genes_only_in_annotation |> length()
+```
+
+Read all the gene readcounts
+```{r}
+rna_readcount_tbls = rna_manifest_tbl |> 
+    select(file_id, file_pth) |> 
+    deframe() |> 
+    map(read_rna_readcount)
+```
+
+Check if the genes are in order for all samples
+```{r}
+stopifnot(every(
+    rna_readcount_tbls,
+    ~ all.equal(.x$gene_id, rna_readcount_tbls[[1]]$gene_id)
+))
+```
+
+Construct the matrices for each "read count type". 
+Since the transcriptome is prepared using Illumina TruSeq Stranded Total RNA kit, we will keep the `stranded_second` read counts.
+For this demo, we will use the unstranded TPM for visualization.
+```{r}
+rna_mats = c("tpm_unstranded", "stranded_second", "unstranded") |> 
+    set_names() |> 
+    map(function(col_name) {
+        mat = rna_readcount_tbls[rna_meta$gdc_file_id] |> 
+            map_dfc(~ .x[[col_name]]) |> 
+            as.matrix()
+       
+        rownames(mat) = rna_readcount_tbls[[1]]$gene_id
+        mat = mat[names(all_genes), ]  # reorder
+        colnames(mat) = rownames(rna_meta)
+        mat
+    })
+```
+
+
+```{r}
+rna = SummarizedExperiment(
+    rna_mats,
+    rowRanges = all_genes,
+    colData = rna_meta,
+    metadata = list(
+        title = "CPTAC3 Glioblastoma 2021",
+        doi = "https://doi.org/10.1016/j.ccell.2021.01.006",
+        data_type = "RNA-Seq transcriptome",
+        data_source = "NCI GDC Data Release 35.0 - September 28, 2022",
+        data_workflow = "STAR - Counts",
+        annotation_source = "Ensembl release 102 (GENCODE 36)"
+    )
+)
+rna
+```
+
+
+
+
+
+## DNA methylation beta values
+```{r}
+dna_methyl_manifest_tbl |> glimpse()
+```
+
+Construct the file path
+```{r}
+dna_methyl_manifest_tbl = dna_methyl_manifest_tbl |> 
+    group_by(file_id, aliquot_submitter_id) |> 
+    arrange(sample_submitter_id) |> 
+    mutate(sample_ids = str_c(sort(sample_submitter_id), collapse = ",")) |>
+    ungroup() |> 
+    distinct(file_id, aliquot_submitter_id, .keep_all = TRUE) |> 
+    mutate(file_pth = fs::path(folder_to_gdc_downloads, file_id, file_name))
+
+all(fs::file_exists(dna_methyl_manifest_tbl$file_pth))
+```
+
+```{r}
+dna_methyl_meta = dna_methyl_manifest_tbl |> 
+    select(
+        sample_type,
+        case_id = case_submitter_id,
+        sample_ids, 
+        aliquot_id = aliquot_submitter_id,
+        gdc_case_id = case_id, 
+        gdc_aliquot_id = aliquot_id,
+        gdc_file_id = file_id,
+        md5sum
+    ) |> 
+    mutate(
+        sample_nickname = case_when(
+            sample_type == "Primary Tumor" ~ case_id,
+            sample_type == "Solid Tissue Normal" ~ str_c("PT-", str_sub(case_id, start = 6L, end = 9L))
+        )
+    ) |> 
+    relocate(sample_nickname) |> 
+    arrange(sample_nickname) |> 
+    column_to_rownames("sample_nickname") 
+
+dna_methyl_meta |> head()
+```
+
+
+### Microarray probe annotation
+Download GDC's official probe annotation `EPIC.hg38.manifest.gencode.v36.tsv.gz` from <https://api.gdc.cancer.gov/v0/data/5ce8ae8f-3386-4d12-9035-152742aa07e0>
+
+```{r}
+dna_methyl_anno_tbl = read_tsv("EPIC.hg38.manifest.gencode.v36.tsv.gz")
+```
+
+Read additional probe annotation from <https://zwdzwd.github.io/InfiniumAnnotation>
+```{r}
+dna_methyl_anno_mask_tbl = read_tsv("EPIC.hg38.mask.tsv.gz")
+good_qual_probe_ids = dna_methyl_anno_mask_tbl |> filter(!MASK_general) |> pull(probeID)
+length(good_qual_probe_ids)
+```
+
+Some probes don't have a genomic location
+```{r}
+dna_methyl_anno_tbl |> 
+    filter(is.na(CpG_beg) | is.na(CpG_end))
+```
+
+
+```{r}
+dna_methyl_anno_gr = dna_methyl_anno_tbl |> 
+    select(-genesUniq, -transcriptTypes) |> 
+    rename(
+        seqnames = CpG_chrm, start = CpG_beg, end = CpG_end,
+        gene_names = geneNames, transcript_ids = transcriptIDs,
+        dist_to_TSS = distToTSS, CGI_position = CGIposition
+    ) |>
+    mutate(
+        # Converted the genomic coordinates from BED format 
+        # (0-based half closed intervals) to 1-based closed intervals
+        start = start + 1,
+        across(
+            c(gene_names, transcript_ids, dist_to_TSS),
+            ~ str_split(.x, ";")
+        ),
+        dist_to_TSS = map(dist_to_TSS, as.integer)
+    )  |> 
+    filter(if_all(c(start, end), ~ !is.na(.x))) |> 
+    filter(probeID %in% good_qual_probe_ids) |> 
+    column_to_rownames("probeID") |> 
+    makeGRangesFromDataFrame(
+        seqinfo = seqinfo(all_genes),
+        keep.extra.columns = TRUE,
+    )
+
+dna_methyl_anno_gr
+```
+
+
+
+### Read files
+```{r}
+read_dna_methyl_beta_vals = function(pth) {
+    beta_vals = read_tsv(
+        pth,
+        col_names = c("probe_id", "beta_val"),
+        col_types = cols(
+            probe_id = col_character(),
+            beta_val = col_double()
+        )
+    ) |> 
+        deframe()
+    beta_vals[names(dna_methyl_anno_gr)]
+}
+```
+
+Test by reading a sample
+```{r}
+beta_vals = read_dna_methyl_beta_vals(dna_methyl_manifest_tbl$file_pth[[1]])
+beta_vals |> head()
+```
+
+Read all the samples
+```{r}
+beta_vals_mat = dna_methyl_manifest_tbl |> 
+    select(file_id, file_pth) |> 
+    deframe() |> 
+    map_dfc(read_dna_methyl_beta_vals) |> 
+    as.matrix()
+
+beta_vals_mat = beta_vals_mat[, dna_methyl_meta$gdc_file_id]
+colnames(beta_vals_mat) = rownames(dna_methyl_meta)
+beta_vals_mat[1:5, 1:5]
+```
+
+```{r}
+dna_methyl = SummarizedExperiment(
+    list(beta_val = beta_vals_mat),
+    rowRanges = dna_methyl_anno_gr,
+    colData = dna_methyl_meta,
+    metadata = list(
+        title = "CPTAC3 Glioblastoma 2021",
+        doi = "https://doi.org/10.1016/j.ccell.2021.01.006",
+        data_type = "EPIC DNA methylation microarray beta values",
+        data_source = "NCI GDC Data Release 35.0 - September 28, 2022",
+        data_workflow = "SeSAMe Methylation Beta Estimation. MASK_general probes are removed",
+        annotation_source = "Ensembl release 102 (GENCODE 36)"
+    )
+)
+dna_methyl
+```
+
+```{r}
+colData(dna_methyl)
+```
+
+
+## Export SummarizedExperiment objects
+```{r}
+rna |> saveRDS("cptac_gbm_2021_rnaseq.rds")
+dna_methyl |> saveRDS("cptac_gbm_2021_dna_methyl.rds")
+```
+
+
+## Clean up
+```{r}
+dbDisconnect(conn, shutdown = TRUE)
+```
+

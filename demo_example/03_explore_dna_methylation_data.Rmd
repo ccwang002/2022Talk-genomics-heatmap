@@ -1,0 +1,629 @@
+---
+title: "Explore CPTAC GBM 2021 data"
+author: "Liang-Bo Wang"
+date: "2022-11-23"
+output: 
+    html_document:
+        df_print: paged
+---
+
+```{r setup, include=FALSE}
+library(here)
+library(arrow)
+library(SummarizedExperiment)
+library(ggbeeswarm)
+library(gtrellis)
+library(ComplexHeatmap)
+library(EnrichedHeatmap)
+library(tidyverse)
+```
+
+```{r}
+sample_info_tbl = read_parquet("cptac_gbm_2021_sample_info.parquet")
+dna_methyl = readRDS("cptac_gbm_2021_dna_methyl.rds")
+rna = readRDS("cptac_gbm_2021_rnaseq.rds")
+```
+
+```{r}
+theme_set(theme_bw())
+```
+
+
+
+
+## Quality control per sample
+```{r}
+has_measurements = !is.na(assay(dna_methyl))
+per_sample = colSums(has_measurements) / nrow(dna_methyl)
+per_probe = rowSums(has_measurements) / ncol(dna_methyl)
+```
+
+```{r}
+per_sample |> head(3)
+per_probe |> head(3)
+```
+
+
+
+```{r}
+data_completeness_per_sample_tbl = (colSums(!is.na(assay(dna_methyl))) / nrow(dna_methyl)) |> 
+    enframe(name = "sample", value = "completeness") |> 
+    arrange(desc(completeness)) |> 
+    mutate(sample = fct_reorder(sample, completeness))
+
+
+ggplot(data_completeness_per_sample_tbl, aes(x = sample, y = completeness)) +
+    geom_col() +
+    scale_y_continuous(labels = scales::label_percent()) +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1)) +
+    labs(
+        title = "DNA methylation data completeness per sample",
+        x = NULL, 
+        y = "% of probes have value"
+    )
+```
+```{r}
+dna_methyl = dna_methyl[
+    , 
+    data_completeness_per_sample_tbl |> filter(completeness > 0.3) |> pull(sample)
+]
+```
+
+
+
+
+## Quality control per probe
+```{r}
+data_completeness_tbl = (1 - rowSums(is.na(assay(dna_methyl))) / ncol(dna_methyl)) |>
+    enframe(name = "probe_id", value = "completeness")
+
+ggplot(data = data_completeness_tbl, 
+       aes(x = completeness)) + 
+    geom_histogram(bins = 50) +
+    scale_x_continuous(labels = scales::label_percent()) +
+    scale_y_continuous(labels = scales::label_comma()) +
+    labs(title = "EPIC DNA methylation microarry data completeness", 
+         x = "Data completeness (%)",
+         y = "Number of probes")
+```
+See the genomic location of the missing probes. 
+Count the precentage of bad probes per 1M bp window
+```{r}
+genome_tiles = seqinfo(dna_methyl) |> 
+    as("GRanges") |> 
+    makeWindows(w = 1e6, short.keep = TRUE)
+names(genome_tiles) = NULL
+mcols(genome_tiles) = NULL
+genome_tiles
+```
+
+```{r}
+lowqual_probes_gr = dna_methyl[data_completeness_tbl$completeness < 0.1] |> 
+    rowRanges() 
+
+lowqual_probes_gr |> 
+    seqnames() |> 
+    table() / seqlengths(dna_methyl)
+```
+
+```{r}
+genome_tiles$num_lowqual = countOverlaps(genome_tiles, lowqual_probes_gr)
+genome_tiles$total = countOverlaps(genome_tiles, rowRanges(dna_methyl))
+genome_tiles$lowqual_probe_freq = genome_tiles$num_lowqual / genome_tiles$total
+genome_tiles
+```
+
+
+```{r, fig.height=8, fig.width=6}
+col_fun = circlize::colorRamp2(
+    c(0, 0.5),
+    # range(genome_tiles$lowqual_probe_freq, na.rm = TRUE),
+    hcl_palette = "viridis"
+)
+cm = ColorMapping(col_fun = col_fun)
+lgd = color_mapping_legend(cm, plot = FALSE, title = "Low\nqual")
+
+gtrellis_layout(
+    n_track = 1, 
+    ncol = 1, 
+    track_axis = FALSE, 
+    xpadding = c(0.15, 0),
+    gap = unit(1, "mm"), 
+    border = FALSE,
+    asist_ticks = FALSE, 
+    add_ideogram_track = TRUE, 
+    ideogram_track_height = unit(2, "mm"),
+    legend = lgd
+)
+
+add_track(genome_tiles, panel_fun = function(gr) {
+    grid.rect(
+        x = (start(gr) + end(gr))/2,
+        y = unit(0.5, "npc"),
+        width = width(gr),
+        height = unit(0.8, "npc"),
+        default.units = "native",
+        gp = gpar(fill = col_fun(gr$lowqual_probe_freq), col = FALSE)
+    )
+})
+add_track(track = 2, clip = FALSE, panel_fun = function(gr) {
+    chr = get_cell_meta_data("name")
+    if(chr == "chrY") {
+        grid.lines(get_cell_meta_data("xlim"), unit(c(0, 0), "npc"), 
+            default.units = "native")
+    }
+    grid.text(chr, x = 0, y = 0, just = c("left", "bottom"), gp = gpar(fontsize=12))
+})
+```
+
+
+
+## Genome wide DNA methylation landscape
+Select probes with sufficient data
+```{r}
+sufficient_data_probe_ids = data_completeness_tbl |> 
+    filter(completeness >= 0.8) |> 
+    pull(probe_id)
+dna_methyl = dna_methyl[sufficient_data_probe_ids] |> 
+    sort()
+```
+
+
+```{r}
+hist(rowSds(assay(dna_methyl), na.rm = TRUE))
+```
+
+```{r}
+dna_methyl_top_var = dna_methyl[order(rowSds(assay(dna_methyl)), decreasing = TRUE)[1:8000], ] |> 
+    sort(ignore.strand=TRUE)
+```
+
+```{r}
+smaller_font = gpar(fontsize = 10)
+ht_opt(
+    fast_hclust = TRUE,
+
+    heatmap_row_names_gp = gpar(fontsize = 6),
+    heatmap_column_names_gp = smaller_font,
+    heatmap_row_title_gp = smaller_font,
+    heatmap_column_title_gp = smaller_font,
+    
+    simple_anno_size = unit(4, "mm")
+)
+```
+
+
+
+```{r, fig.width=10, fig.height=5}
+beta_val_col_fun = circlize::colorRamp2(c(0, 1), hcl_palette = "viridis")
+
+ht = Heatmap(
+    t(assay(dna_methyl_top_var)),
+    name = "beta_val",
+    col = beta_val_col_fun,
+    
+    cluster_columns = FALSE,
+    column_split = seqnames(dna_methyl_top_var),
+    show_column_names = FALSE,
+    
+    use_raster = TRUE,
+    raster_quality = 4,
+    heatmap_legend_param = list(
+        title = "Beta value",
+        legend_direction = "horizontal",
+        legend_width = unit(3, "cm")
+    ),
+)
+
+draw(
+    ht,
+    background = "transparent",
+    merge_legends = TRUE,
+    heatmap_legend_side = "bottom"
+)
+```
+
+```{r}
+cairo_pdf("figures/genome_wide_dna_methyl_heatmap.pdf", width = 14, height = 8)
+draw(
+    ht,
+    background = "transparent",
+    merge_legends = TRUE,
+    heatmap_legend_side = "bottom",
+)
+dev.off()
+```
+
+
+
+## X-inactivation
+```{r}
+dna_methyl_chrX = dna_methyl_top_var |> 
+    subset(seqnames == "chrX") 
+```
+
+XIST DDX3Y RPS4Y1
+```{r}
+sex_related_genes_tbl = tibble(
+    gene_name = c("XIST", "DDX3Y", "RPS4Y1"),
+)
+rna_sex_related = rna |>
+    subset(gene_name %in% sex_related_genes_tbl$gene_name)
+
+rownames(rna_sex_related) = rowRanges(rna_sex_related)$gene_name
+rowRanges(rna_sex_related)
+```
+
+```{r}
+plot_tbl = assay(rna_sex_related, "tpm_unstranded") |> 
+    t() |> 
+    as_tibble(rownames = "sample_nickname") |> 
+    pivot_longer(
+        cols = -sample_nickname, 
+        names_to = "gene_name", 
+        values_to = "tpm"
+    ) |> 
+    mutate(
+        gene_exp = log2(tpm + 1)
+    ) |> 
+    left_join(
+        sample_info_tbl |> 
+            select(
+                sample_nickname = case_id,
+                sex_from_clinical_data = gender
+            ),
+        by = "sample_nickname"
+    )
+
+ggplot(plot_tbl, aes(x = gene_name, y = gene_exp, color = sex_from_clinical_data)) +
+    geom_quasirandom(
+        groupOnX = TRUE,
+        dodge.width = 0.8
+    ) +
+    guides(
+        color = guide_legend(title = "Sex")
+    ) +
+    labs(
+        title = "Expression of sex related genes",
+        x = NULL,
+        y = "Gene expression (log2 TPM)"
+    )
+
+ggsave("figures/demo_sex_related_gene_expression.png", width=6, height=5, dpi=300)
+```
+
+```{r}
+shared_samples = intersect(colnames(dna_methyl_chrX), colnames(rna_sex_related))
+
+anno_df = sample_info_tbl |> 
+    filter(sample_nickname %in% shared_samples) |> 
+    column_to_rownames("sample_nickname")
+anno_df = anno_df[shared_samples, ]
+
+dna_methyl_chrX = dna_methyl_chrX[, rownames(anno_df)]
+rna_sex_related = rna_sex_related[, rownames(anno_df)]
+anno_df |> head()
+```
+
+```{r, fig.width=12, fig.height=7}
+ha = rowAnnotation(
+    sex = anno_df$gender,
+    
+    col = list(
+        sex = c(Female = "#8700F9", Male = "#00C4AA")
+    ),
+    
+    annotation_legend_param = list(
+        sex = list(
+            title = "Sex"
+        )
+    )
+)
+
+ht_dna_methyl = Heatmap(
+    t(assay(dna_methyl_chrX)),
+    name = "dna_methyl_beta",
+    col = beta_val_col_fun,
+    
+    show_column_names = FALSE,
+    
+    heatmap_legend_param = list(
+        title = "DNA methyl.\nbeta value",
+        legend_direction = "horizontal",
+        legend_width = unit(2, "cm")
+    ),
+    
+    use_raster = TRUE,
+    raster_quality = 2
+)
+
+ht_rna = Heatmap(
+    log2(t(assay(rna_sex_related)) + 1),
+    name = "rna",
+    col = circlize::colorRamp2(c(0 , 7), hcl_palette = "inferno"),
+    
+    cluster_columns = FALSE,
+    heatmap_legend_param = list(
+        title = "RNA expr.\n(log2 TPM)",
+        legend_direction = "horizontal",
+        legend_width = unit(2, "cm")
+    ),
+    width = unit(4, "mm") * 3,
+    
+    right_annotation = ha
+)
+
+
+ht_list = ht_dna_methyl + ht_rna
+draw(
+    ht_list, 
+    merge_legends = TRUE,
+    heatmap_legend_side = "right",
+    ht_gap = unit(1, "mm")
+)
+```
+
+```{r}
+cairo_pdf("figures/sex_heatmap.pdf", width = 10, height = 7)
+draw(
+    ht_list, 
+    merge_legends = TRUE,
+    heatmap_legend_side = "right",
+    ht_gap = unit(1, "mm")
+)
+dev.off()
+
+# svg("figures/sex_heatmap.svg", width = 12, height = 7)
+# draw(
+#     ht_list, 
+#     merge_legends = TRUE,
+#     heatmap_legend_side = "right",
+#     ht_gap = unit(1, "mm")
+# )
+# dev.off()
+```
+
+
+## Figure 1 like overview
+```{r}
+top_variable_probe_ids = dna_methyl |> 
+    # Exclude probes at sex chromosomes
+    subset(!seqnames %in% c("chrX", "chrY", "chrM"), ) |> 
+    assay() |> 
+    rowSds() |> 
+    order(decreasing = TRUE) |> 
+    head(8000)
+
+dna_methyl_top_var = dna_methyl[top_variable_probe_ids, shared_samples] |> 
+    sort(ignore.strand = TRUE)
+
+dna_methyl_top_var
+```
+
+
+```{r}
+top_variable_genes = rna |> 
+    # Exclude probes at sex chromosomes
+    subset(!seqnames %in% c("chrX", "chrY", "chrM"), ) |> 
+    assay() |> 
+    rowSds() |> 
+    order(decreasing = TRUE) |> 
+    head(2000)
+
+rna_top_var = rna[top_variable_genes, shared_samples] |> 
+    sort(ignore.strand = TRUE)
+
+# Use gene symbol
+rownames(rna_top_var) = rowData(rna_top_var)$gene_name
+rna_top_var
+```
+
+Pre calculate the normalized expression matrix
+```{r}
+assay(rna_top_var, "norm_expr") =
+    log2(assay(rna_top_var) + 1) |> 
+    t() |> 
+    scale(center = TRUE, scale = TRUE) |> 
+    t()
+```
+
+
+Define colors
+```{r, fig.width=10, fig.height=5}
+my_colors = list(
+    sex = c(Female = "#8700F9", Male = "#00C4AA"),
+    rna = c(
+        "IDH mutant" = "#2A9C6A", "Proneural" = "#EC6F95", 
+        "Mesenchymal" = "#E8AB16", "Classical"= "#23BFE8"
+    ),
+    dna_methyl = c(
+        "dm1" = "#FF80A0",
+        "dm2" = "#D8A400",
+        "dm3" = "#63C02A",
+        "dm4" = "#00CBB6",
+        "dm5" = "#16B5FF",
+        "dm6" = "#E984FB",
+        "low_qual" = "gray20"
+    )
+)
+my_colors$multiomic = c(
+    "IDH mutant" = my_colors$rna[["IDH mutant"]],
+    "nmf1" = my_colors$rna[['Proneural']],
+    "nmf2" = my_colors$rna[['Mesenchymal']],
+    "nmf3" = my_colors$rna[['Classical']]
+)
+```
+
+```{r}
+wang_cancer_cell_2017_markers = tibble(
+    "Mesenchymal" = c("BCL3", "TGFBI", "ITGB1", "LOX", "COL1A2", "VDR", "IL6", "MMP7"),
+    "Proneural" = c("GARBR3", "HOXD3", "ERBB3", "SOX10", "CDKN1C", "PDGFRA", "HDAC2", "EPHB1"),
+    "Classical" = c("PTPRA", "ELOVL2", "SOX9", "PAX6", "CDH4", "SEPTIN11", "MEOX2", "FGFR3")
+) |> 
+    pivot_longer(cols = everything(), names_to = "subtype", values_to = "gene_name") |> 
+    arrange(subtype)
+wang_cancer_cell_2017_markers |> head()
+```
+
+
+```{r} 
+gene_markers_tbl = wang_cancer_cell_2017_markers |> 
+    inner_join(
+        tibble(
+            rna_row_idx = which(rownames(rna_top_var) %in% wang_cancer_cell_2017_markers$gene_name),
+            gene_name = rowData(rna_top_var[rna_row_idx])$gene_name
+        ),
+        by = "gene_name"
+    ) |> 
+    arrange(rna_row_idx) |> 
+    mutate(color = my_colors$rna[subtype])
+
+gene_markers_tbl 
+```
+
+
+
+```{r, fig.width=15, fig.height=9}
+ha = rowAnnotation(
+    sex = anno_df$gender,
+    multiomic = anno_df$multiomic,
+    rna = anno_df$rna_wang_cancer_cell_2017,
+    dna_methyl = anno_df$dna_methyl,
+    
+    col = my_colors,
+    annotation_name_side = "top",
+    annotation_legend_param = list(
+        sex = list(
+            title = "Sex"
+        ),
+        multiomic = list(
+            title = "Multiomic subtypes"
+        ),
+        rna = list(
+            title = "RNA only subtypes"
+        ),
+        dna_methyl = list(
+            title = "DNA methyl.\nonly subtypes"
+        )
+    )
+)
+
+marker_ha = columnAnnotation(
+    known_marker = anno_mark(
+        at = gene_markers_tbl$rna_row_idx,
+        labels = gene_markers_tbl$gene_name,
+        labels_gp = gpar(col = gene_markers_tbl$color),
+        labels_rot = 45,
+        padding = unit(3, "mm")
+    )
+)
+
+ht_dna_methyl = Heatmap(
+    dna_methyl_top_var |> assay() |> t(),
+    name = "dna_methyl_beta",
+    col = beta_val_col_fun,
+    
+    show_column_names = FALSE,
+    cluster_columns = TRUE,
+    clustering_distance_columns = "pearson",
+    clustering_method_columns = "ward.D2",
+    column_dend_reorder = TRUE,
+    show_column_dend = FALSE,
+    
+    cluster_rows = TRUE,
+    row_dend_reorder = TRUE,
+    clustering_distance_rows = "pearson",
+    clustering_method_rows = "ward.D2",
+    show_row_dend = TRUE,
+    
+    heatmap_legend_param = list(
+        title = "DNA methyl.\nbeta value",
+        legend_direction = "horizontal",
+        legend_width = unit(2, "cm")
+    ),
+    
+    use_raster = TRUE,
+    raster_quality = 2,
+    
+    left_annotation = ha,
+
+    width = unit(7, "in")
+)
+
+ht_rna = Heatmap(
+    rna_top_var |> assay("norm_expr") |> t(),
+    col = circlize::colorRamp2(c(-2, 0, 2), colors = c("blue", "white", "red")),
+    
+    cluster_rows = FALSE,
+    # clustering_distance_rows = "pearson",
+    # clustering_method_rows = "ward.D2",
+    row_dend_reorder = FALSE,
+    
+    show_column_names = FALSE,
+    cluster_columns = TRUE,
+    clustering_distance_columns = "pearson",
+    clustering_method_columns = "ward.D2",
+    show_column_dend = FALSE,
+    column_dend_reorder = TRUE,
+    
+    heatmap_legend_param = list(
+        title = "RNA expr.",
+        legend_direction = "horizontal",
+        legend_width = unit(2, "cm")
+    ),
+    
+    top_annotation = marker_ha,
+    
+    use_raster = TRUE,
+    raster_quality = 2,
+    
+    width = unit(4, "in")
+)
+
+ht_list = ht_dna_methyl + ht_rna
+
+draw(
+    ht_list,
+    merge_legends = TRUE,
+    heatmap_legend_side = "right",
+    ht_gap = unit(1, "mm")
+)
+```
+
+
+```{r}
+cairo_pdf("figures/data_overview_heatmap.pdf", width = 15, height = 9)
+draw(
+    ht_list, 
+    merge_legends = TRUE,
+    heatmap_legend_side = "right",
+    ht_gap = unit(1, "mm")
+)
+dev.off()
+```
+
+
+## Re-use color palettes
+```{r}
+my_colors_tbl = my_colors |> 
+    imap_dfr(function(x, name) {
+        x |> 
+            enframe('label', 'color') |> 
+            mutate(column = .env$name)
+    }) |> 
+    select(column, label, color)
+
+my_colors_tbl
+```
+
+```{r}
+my_colors.recovered = my_colors_tbl |> 
+    split(my_colors_tbl$column) |> 
+    map(function(data_tbl) {
+        data_tbl |> 
+            select(label, color) |> 
+            deframe()
+    })
+
+my_colors.recovered
+```

@@ -1,0 +1,249 @@
+---
+title: "Download CPTAC3 GBM 2021 data from NCI Genomics Data Commons"
+author: "Liang-Bo Wang"
+date: "2022-11-22"
+output: 
+    html_document:
+        df_print: paged
+---
+
+```{r setup, include=FALSE}
+library(GenomicDataCommons)
+library(readxl)
+library(arrow)
+library(tidyverse)
+```
+
+Check GDC's API status
+```{r}
+GenomicDataCommons::status()
+```
+
+Use the following command to find all the available fields to apply filtering
+```
+GenomicDataCommons::cases() |> available_fields()
+```
+
+Select CPTAC brain samples (both tumor and normal)
+```{r}
+cptac3_gbm_cases = GenomicDataCommons::cases() |> 
+    GenomicDataCommons::filter( 
+        project.project_id == 'CPTAC-3' & primary_site == 'brain'
+    ) |> 
+    results_all()
+
+length(cptac3_gbm_cases$id)
+```
+
+```{r}
+names(cptac3_gbm_cases)
+```
+
+```{r}
+cptac3_gbm_case_tbl = cptac3_gbm_cases[c("submitter_id", "case_id", "primary_site", "disease_type")] |>
+    as_tibble() |> 
+    arrange(submitter_id)
+
+cptac3_gbm_case_tbl |> head()
+```
+
+
+Get clinical data (currently not working), so we download it from the original publication's supplemental table
+```
+clinical_data = gdc_clinical(cptac3_gbm_case_tbl$case_id, include_list_cols = FALSE)
+clinical_data
+```
+```{r}
+table_s1_local_pth = "./cptac3_gbm_2021_table_s1.xlsx"
+download.file(
+    "https://ars.els-cdn.com/content/image/1-s2.0-S1535610821000507-mmc2.xlsx",
+    destfile = table_s1_local_pth
+)
+# List all the tabs
+excel_sheets(table_s1_local_pth)
+```
+
+
+```{r}
+clinical_tbl = read_excel(table_s1_local_pth, sheet = "clinical_data", na = "NA")
+sample_metadata_tbl = read_excel(table_s1_local_pth, sheet = "additional_annotations", na = "NA") |> 
+    rename(case_id = case)
+
+sample_info_tbl = clinical_tbl |> 
+    left_join(sample_metadata_tbl, by = "case_id") |> 
+    mutate(
+        sample_nickname = case_id
+    )
+sample_info_tbl |> glimpse()
+```
+
+```
+GenomicDataCommons::files() |> 
+    GenomicDataCommons::available_fields()
+```
+
+Get DNA methylation array file manifest (beta values)
+```{r}
+dna_methyl_files = GenomicDataCommons::files() |> 
+    GenomicDataCommons::filter(
+        cases.case_id %in% cptac3_gbm_case_tbl$case_id &
+        access == "open" &
+            experimental_strategy == "Methylation Array" &
+            analysis.workflow_type == "SeSAMe Methylation Beta Estimation" &
+            data_format == "txt"
+    ) 
+```
+
+Find additional fields to include in the manifest
+```
+fields = dna_methyl_files |> 
+    GenomicDataCommons::available_fields()
+
+fields[grepl("cases.samples", fields)]
+```
+
+
+```{r}
+dna_methyl_metadata = dna_methyl_files |> 
+    GenomicDataCommons::select(c(
+        "cases.case_id", 
+        "cases.submitter_id", 
+        "cases.samples.submitter_id",
+        "cases.samples.sample_id",
+        "cases.samples.sample_type",
+        "cases.samples.portions.analytes.aliquots.aliquot_id",
+        "cases.samples.portions.analytes.aliquots.submitter_id" 
+)) |> 
+    results_all()
+
+dna_methyl_metadata_tbl = dna_methyl_metadata$cases |>
+    imap_dfr(function(nested_list, file_id) {
+        samples_tbl = nested_list$samples
+        stopifnot(nrow(samples_tbl) == 1)
+        data_tbl = samples_tbl |> 
+            map(~ .x$portions) |> 
+            flatten() |> 
+            map(~ .x$analytes) |> 
+            flatten() |> 
+            map(~ .x$aliquots) |> 
+            flatten_dfr() |>
+            rename(aliquot_submitter_id = submitter_id) |> 
+            mutate(
+                file_id = file_id,
+                case_id = nested_list$case_id,
+                case_submitter_id = nested_list$submitter_id,
+                sample_id = samples_tbl[[1]]$sample_id,
+                sample_submitter_id = samples_tbl[[1]]$submitter_id,
+                sample_type = samples_tbl[[1]]$sample_type,
+            )
+        data_tbl
+    }) |> 
+    select(file_id, case_submitter_id, case_id, aliquot_submitter_id, aliquot_id, everything()) |> 
+    distinct()
+```
+
+```{r}
+dna_methyl_metadata_tbl |> head()
+```
+
+```{r}
+dna_methyl_manifest_tbl = dna_methyl_files |> 
+    manifest() |> 
+    left_join(dna_methyl_metadata_tbl, by = "file_id")
+```
+
+```{r}
+dna_methyl_manifest_tbl |> head()
+```
+
+
+
+Get RNA-seq file manifest (STAR read counts and TPM values)
+```{r}
+rnaseq_files =  GenomicDataCommons::files() |> 
+    GenomicDataCommons::filter(
+        cases.case_id %in% cptac3_gbm_case_tbl$case_id &
+        access == "open" &
+            experimental_strategy == "RNA-Seq" &
+            analysis.workflow_type == "STAR - Counts"
+    )
+```
+
+```{r}
+rnaseq_metadata = rnaseq_files |> 
+    GenomicDataCommons::select(c(
+        "cases.case_id", 
+        "cases.submitter_id", 
+        "cases.samples.submitter_id",
+        "cases.samples.sample_id",
+        "cases.samples.sample_type",
+        "cases.samples.portions.analytes.aliquots.aliquot_id",
+        "cases.samples.portions.analytes.aliquots.submitter_id"
+)) |> 
+    results_all()
+
+rnaseq_metadata_tbl = rnaseq_metadata$cases |>
+    imap_dfr(function(nested_list, file_id) {
+        samples_tbl = nested_list$samples
+        stopifnot(nrow(samples_tbl) == 1)
+        df = samples_tbl |> 
+            map(~ .x$portions) |> 
+            flatten() |> 
+            map(~ .x$analytes) |> 
+            flatten() |> 
+            map(~ .x$aliquots) |> 
+            flatten_dfr() |>
+            rename(aliquot_submitter_id = submitter_id) |> 
+            mutate(
+                file_id = file_id,
+                case_id = nested_list$case_id,
+                case_submitter_id = nested_list$submitter_id,
+                sample_id = samples_tbl[[1]]$sample_id,
+                sample_submitter_id = samples_tbl[[1]]$submitter_id,
+                sample_type = samples_tbl[[1]]$sample_type,
+            )
+    }) |> 
+    select(file_id, case_submitter_id, case_id, aliquot_submitter_id, aliquot_id, everything()) |> 
+    distinct()
+```
+
+
+```{r}
+rna_manifest_tbl = rnaseq_files |> 
+    manifest() |> 
+    left_join(rnaseq_metadata_tbl, by = "file_id")
+
+rna_manifest_tbl |> head()
+```
+
+
+Export the files
+```{r}
+sample_info_tbl |> 
+    write_parquet(
+        "cptac_gbm_2021_sample_info.parquet",
+        compression = "zstd", 
+        compression_level = 9
+    )
+
+dna_methyl_manifest_tbl |> 
+    write_tsv("cptac_gbm_2021_dna_methyl_gdc_manifest.tsv")
+
+rna_manifest_tbl |> 
+    write_tsv("cptac_gbm_2021_rnaseq_gdc_manifest.tsv")
+```
+
+
+Download the files using [gdc-client]. For example, I put the `gdc-client` binary at `~/Downloads/gdc-client` and the download folder at `~/Downloads/gdc_downloads/`:
+
+    mkdir ~/Downloads/gdc_downloads 
+    
+    ~/Downloads/gdc-client download -n 2 \
+        -m ./cptac_gbm_2021_dna_methyl_gdc_manifest.tsv \
+        -d ~/Downloads/gdc_downloads/
+        
+    ~/Downloads/gdc-client download -n 2 \
+        -m ./cptac_gbm_2021_rnaseq_gdc_manifest.tsv \
+        -d ~/Downloads/gdc_downloads/
+
+[gdc-client]: https://gdc.cancer.gov/access-data/gdc-data-transfer-tool
