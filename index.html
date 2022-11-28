@@ -1048,7 +1048,7 @@ ht_list = ht1 %v% ht2 %v% col_ha</code>
 		</div>
 	</section>
 
-	<section class="slide">
+	<section id="demo-break" class="slide">
 		<h2 class="shout">Demo on an example dataset</h2>
 	</section>
 
@@ -1091,7 +1091,7 @@ ht_list = ht1 %v% ht2 %v% col_ha</code>
 				focus on RNA-Seq (gene expression) and DNA methylation microarray only</li>
 			<li>Collect the datasets and create <code>SummarizedExperiment</code> objects</li>
 			<li>Data exploration (<code>ComplexHeatmap</code> and other visualizations)</li>
-			<li>Data analysis: using DNA damage repair by <a href="https://en.wikipedia.org/wiki/O-6-methylguanine-DNA_methyltransferase">MGMT</a> as an example</li>
+			<li>Data analysis: using X-chromosome inactivation as an example</li>
 		</ol>
 	</section>
 
@@ -1141,7 +1141,6 @@ ht_list = ht1 %v% ht2 %v% col_ha</code>
 					<li>DNA methylation <strong>microarray <a href="https://gdc.cancer.gov/about-data/gdc-data-processing/gdc-reference-files">probe design</a></strong><br>
 						(Illumina EPIC) and an external <a href="https://zwdzwd.github.io/InfiniumAnnotation">probe annotations</a></li>
 				</ul>
-				<p>See notes for details</p>
 			</div>
 			<pre class="language-text dense">
 				<code># gdc-client download \
@@ -1162,6 +1161,20 @@ ht_list = ht1 %v% ht2 %v% col_ha</code>
 ...</code>
 			</pre>
 		</div>
+		<p class="notes">Details are in the slide notes</p>
+		<style>
+			#download-annotations .notes {
+				position: absolute;
+				left: 5.5rem;
+				bottom: 3.5rem;
+				width: 12rem;
+				font-size: 1rem;
+				line-height: 1.5;
+				margin: 0;
+				padding: 0.5rem;
+				border: solid 2px var(--color-key);
+			}
+		</style>
 	</section>
 
 	<section id="prep-rna-gene-annotations" class="slide tight">
@@ -1204,9 +1217,24 @@ seqlevelsStyle(all_genes) = "UCSC"</code>
 # seqinfo: 25 sequences (1 circular) from hg38 genome
 </code>
 				</pre>
-				<p>This will be the row (feature) order and annotations of the data matrix</p>
+				<p class="notes">
+					<code>all_genes</code> will become the row (feature) order and annotations of the data matrix
+				</p>
 			</div>
 		</div>
+		<style>
+			#prep-rna-gene-annotations .notes {
+				position: absolute;
+				right: 9.5rem;
+				bottom: 6.5rem;
+				width: 19rem;
+				font-size: 1rem;
+				line-height: 1.5;
+				margin: 0;
+				padding: 0.75em;
+				border: solid 2px var(--color-key);
+			}
+		</style>
 	</section>
 
 	<section id="prep-rna-readcount" class="slide fullpage">
@@ -1256,7 +1284,7 @@ example_readcount_tbl = read_rna_readcount(
 		</div>
 	</section>
 
-	<section id="rna-summarizedexperiment" class="slide tight">
+	<section id="rna-summarizedexperiment" class="slide">
 		<h2>RNA-Seq's SummarizedExperiment</h2>
 		<div class="two columns">
 			<pre class="language-r dense">
@@ -1286,11 +1314,27 @@ rna |> saveRDS("cptac_gbm_2021_rnaseq.rds")</code>
 # colnames(108): C3L-00104 C3L-00365 ... PT-WVLH PT-Y8DK
 # colData names(8): sample_type case_id ... gdc_file_id md5sum</code>
 				</pre>
-				<p>
-					Match the dimensions and names of different matrices and data frames
+				<p class="notes">
+					It's important to always <strong>match the dimensions and names</strong> across all the matrices and data frames (<code>rowData</code> or <code>rowRanges</code>, <code>colData</code>, and <code>assay</code>)
 				</p>
 			</div>
 		</div>
+		<style>
+			#rna-summarizedexperiment .notes {
+				position: absolute;
+				right: 11.5rem;
+				bottom: 7rem;
+				width: 17rem;
+				font-size: 1rem;
+				line-height: 1.5;
+				margin: 0;
+				padding: 1em;
+				border: solid 2px var(--color-key);
+			}
+			#rna-summarizedexperiment .notes code {
+				font-size: 0.875rem;
+			}
+		</style>
 	</section>
 
 	<section id="prep-dna-methyl" class="slide tight">
@@ -1333,7 +1377,7 @@ colnames(mat) = rownames(dna_methyl_meta)</code>
 		</div>
 	</section>
 
-	<section id="dna-methyl-summarizedexperiment" class="slide tight">
+	<section id="dna-methyl-summarizedexperiment" class="slide">
 		<h2>DNA methyl's SummarizedExperiment</h2>
 		<div class="two columns">
 			<div>
@@ -1361,23 +1405,35 @@ dna_methyl |>
 				</pre>
 			</div>
 			<div>
-				<p>In the subsequent analyses, we just need these files:</p>
+				<p>We will just need the following files in our analysis later:</p>
 				<ol>
-					<li>SummarizedExperiment objects (RDS)</li>
-					<li>Sample information table (clinical data, classifications) (parquet)</li>
+					<li>SummarizedExperiment objects (<code>RDS</code>)</li>
+					<li>Sample information table (clinical data, classifications) (<code>parquet</code>)</li>
 				</ol>
-				<p>Refer to the slide notes and the full R Markdown notebooks for the complete steps</p>
 			</div>
+			<p class="notes">Refer to the slide notes and R Markdown notebooks in the <a href="https://github.com/ccwang002/2022Talk-genomics-heatmap">GitHub repo</a> for the complete steps of data processing and analysis</p>
 		</div>
 		<style>
-			#dna-methyl-summarizedexperiment :is(p, ol) {
+			#dna-methyl-summarizedexperiment :is(p:not(.notes), ol) {
 				font-size: 1.25rem;
+			}
+
+			#dna-methyl-summarizedexperiment .notes {
+				position: absolute;
+				right: 10rem;
+				bottom: 4rem;
+				width: 20rem;
+				font-size: 1rem;
+				line-height: 1.5;
+				margin: 0;
+				padding: 0.75em;
+				border: solid 2px var(--color-key);
 			}
 		</style>
 	</section>
 
 	<section id="dna-methyl-data-qc" class="slide tight wider">
-		<h2>DNA methylation data quality control</h2>
+		<h2>DNA methyl data quality control</h2>
 		<div class="two columns l70">
 			<pre class="language-r dense">
 <code># Check for missing values
@@ -1395,7 +1451,7 @@ ggplot(plot_tbl, aes(x = sample, y = completeness)) +
 top_var_probe_ids = assay(dna_methyl) |> rowSds() |>
 	order(decreasing = TRUE) |> head(8000)
 dna_methyl = dna_methyl[top_var_probe_ids, ] |>
-	sort(ignore.strand = TRUE) </code>
+	sort(ignore.strand = TRUE)</code>
 			</pre>
 			<figure class="next">
 				<img class="fill w"
@@ -1598,14 +1654,62 @@ draw(ht_list, merge_legends = TRUE)</code>
 		</style>
 	</section>
 
+	<section id="data-overview-prep" class="slide">
+		<h2>Let's make a data overview heatmap</h2>
+		<div class="two columns l40">
+			<ol>
+				<li>Exclude the features on sex chromosomes (?)</li>
+				<li>Select top variable features</li>
+				<li>Normalize gene expression <br>(relative in[de]crease)</li>
+				<li>Include more sample annotations</li>
+			</ol>
+			<pre class="language-r dense next">
+<code># 1&amp;2. Subset/reorder/rename
+top_variable_genes = rna |>
+    subset(!seqnames %in% c("chrX", "chrY", "chrM"), ) |>
+    assay("tpm_unstranded") |>
+    rowSds() |>
+	order(decreasing = TRUE) |> head(2000)
+rna_top_var = rna[top_variable_genes, shared_samples]
+rownames(rna_top_var) = rowData(rna_top_var)$gene_name
+
+# 3. Normalize gene expression per gene/row
+assay(rna_top_var, "norm_expr") =
+	log2(assay(rna_top_var) + 1) |>
+    t() |>
+	scale(center = T, scale = T) |>
+	t()</code>
+			</pre>
+		</div>
+		<style>
+		</style>
+	</section>
+
 	<section id="data-overview-heatmap" class="slide tight wider">
-		<h2>Data overview heatmap</h2>
+		<h2>Let's make a data overview heatmap</h2>
 		<div class="two columns">
-			<div></div>
-			<figure>
+			<pre class="language-r dense">
+<code># Define shared color palettes
+my_colors = list(
+	rna = c(
+		"IDH mutant" = "#2A9C6A",
+		"Proneural" = "#EC6F95",
+		"Mesenchymal" = "#E8AB16",
+		"Classical"= "#23BFE8"
+	), ...
+)
+ha = rowAnnotation(
+	sex = anno_df$sex,
+	rna = anno_df$rna,
+	...
+	col = my_colors,
+    ...
+)</code>
+			</pre>
+			<figure class="next">
 				<img class="fill w"
 					src="pictures/demo_data_overview_heatmap.png"
-					alt="">
+					alt="Overview of the DNA methylation and gene expression landscape of our glioblastoma cohort.">
 			</figure>
 		</div>
 		<style>
@@ -1615,21 +1719,37 @@ draw(ht_list, merge_legends = TRUE)</code>
 		</style>
 	</section>
 
-	<!-- Two column template -->
-	<section class="slide tight">
-		<h2></h2>
-		<div class="two columns">
-			<pre class="language-r dense">
-<code>
-</code>
-			</pre>
-			<pre class="language-r dense">
-<code>
-</code>
-			</pre>
-		</div>
-	</section>
+	<section class="slide-notes" style="grid-row: span 2;">
+		<h3>Color palettes/mappings reuse</h3>
+		<p>While the color palettes/mappings <code>my_colors</code> can be reused easily in R by exporting it as a <code>RDS</code> file, it's not easy to use from a different language (Python)</p>
+		<pre class="language-r">
+<code># Convert list of color palettes/mappings to a data frame
+my_colors_tbl = my_colors |>
+    imap_dfr(function(palette, name) {
+        palette |>
+            enframe('label', 'color') |>
+            mutate(column = .env$name)
+    }) |>
+    select(column, label, color)
+# # A tibble: 17 × 3
+#   column     label       color
+#   &lt;chr&gt;      &lt;chr&gt;       &lt;chr&gt;
+# 1 sex        Female      #8700F9
+# 2 sex        Male        #00C4AA
+# 3 rna        IDH mutant  #2A9C6A
+# ...
 
+# Reconstruct the list of color palettes/mappings
+# from a exported data frame
+my_colors.recovered = my_colors_tbl |>
+    split(my_colors_tbl$column) |>
+    map(function(data_tbl) {
+        data_tbl |>
+            select(label, color) |>
+            deframe()
+    })</code>
+		</pre>
+	</section>
 
 	<section id="data-overview-final" class="slide">
 		<div class="two columns">
@@ -1644,6 +1764,58 @@ draw(ht_list, merge_legends = TRUE)</code>
 		<style>
 			#data-overview-final .final-figure1 {
 				height: 450px;
+			}
+		</style>
+	</section>
+
+	<section id="future-challenges" class="slide">
+		<h2>Future challenges</h2>
+		<div class="two columns r40">
+			<ul>
+				<li>Handle larger-than-memory data matrix</li>
+				<li>Handle High-dimensional arrays<br>
+					(e.g., single cell, spatial, time)</li>
+				<li>Interoperability with other languages (Python)</li>
+				<li>Interactive visualization</li>
+				<li>Graph genome representation and analysis</li>
+			</ul>
+			<figure>
+				<img
+				class="fill w"
+				src="pictures/genomic_analysis_rocks_DALL·E.png"
+				alt="Illustration of a rocket in the shape of a DNA helix traveling in space. DALL·E generated art.">
+			</figure>
+		</div>
+	</section>
+
+	<section id="end" class="slide clear black">
+		<h2>Thank You</h2>
+		<figure>
+			<img src="pictures/andrew-ridley-jR4Zf-riEjI-unsplash.jpg" class="cover w" alt="">
+			<figcaption class="copyright bottom white">
+				Photo by <a href="https://unsplash.com/@aridley88">Andrew Ridley</a>
+				on <a href="https://unsplash.com/photos/jR4Zf-riEjI">Unsplash</a>
+			</figcaption>
+		</figure>
+		<style>
+			#end h2 {
+				position: absolute;
+				top: 6rem;
+				left: 0;
+				right: 0;
+				margin: 0;
+				padding: 1.25em calc(var(--slide-left-side) / 2);
+
+				font-size: 4rem;
+				font-weight: 600;
+				line-height: 1.25;
+				text-align: center;
+
+				color: var(--color-black);
+			}
+
+			#end .copyright {
+				left: calc(var(--slide-left-side) / 2);
 			}
 		</style>
 	</section>
