@@ -1048,7 +1048,7 @@ ht_list = ht1 %v% ht2 %v% col_ha</code>
 		</div>
 	</section>
 
-	<section class="slide">
+	<section id="demo-break" class="slide">
 		<h2 class="shout">Demo on an example dataset</h2>
 	</section>
 
@@ -1141,7 +1141,6 @@ ht_list = ht1 %v% ht2 %v% col_ha</code>
 					<li>DNA methylation <strong>microarray <a href="https://gdc.cancer.gov/about-data/gdc-data-processing/gdc-reference-files">probe design</a></strong><br>
 						(Illumina EPIC) and an external <a href="https://zwdzwd.github.io/InfiniumAnnotation">probe annotations</a></li>
 				</ul>
-				<p>See notes for details</p>
 			</div>
 			<pre class="language-text dense">
 				<code># gdc-client download \
@@ -1162,6 +1161,20 @@ ht_list = ht1 %v% ht2 %v% col_ha</code>
 ...</code>
 			</pre>
 		</div>
+		<p class="notes">Details are in the slide notes</p>
+		<style>
+			#download-annotations .notes {
+				position: absolute;
+				left: 5.5rem;
+				bottom: 3.5rem;
+				width: 12rem;
+				font-size: 1rem;
+				line-height: 1.5;
+				margin: 0;
+				padding: 0.5rem;
+				border: solid 2px var(--color-key);
+			}
+		</style>
 	</section>
 
 	<section id="prep-rna-gene-annotations" class="slide tight">
@@ -1204,9 +1217,24 @@ seqlevelsStyle(all_genes) = "UCSC"</code>
 # seqinfo: 25 sequences (1 circular) from hg38 genome
 </code>
 				</pre>
-				<p>This will be the row (feature) order and annotations of the data matrix</p>
+				<p class="notes">
+					<code>all_genes</code> will become the row (feature) order and annotations of the data matrix
+				</p>
 			</div>
 		</div>
+		<style>
+			#prep-rna-gene-annotations .notes {
+				position: absolute;
+				right: 9.5rem;
+				bottom: 6.5rem;
+				width: 19rem;
+				font-size: 1rem;
+				line-height: 1.5;
+				margin: 0;
+				padding: 0.75em;
+				border: solid 2px var(--color-key);
+			}
+		</style>
 	</section>
 
 	<section id="prep-rna-readcount" class="slide fullpage">
@@ -1256,7 +1284,7 @@ example_readcount_tbl = read_rna_readcount(
 		</div>
 	</section>
 
-	<section id="rna-summarizedexperiment" class="slide tight">
+	<section id="rna-summarizedexperiment" class="slide">
 		<h2>RNA-Seq's SummarizedExperiment</h2>
 		<div class="two columns">
 			<pre class="language-r dense">
@@ -1286,11 +1314,27 @@ rna |> saveRDS("cptac_gbm_2021_rnaseq.rds")</code>
 # colnames(108): C3L-00104 C3L-00365 ... PT-WVLH PT-Y8DK
 # colData names(8): sample_type case_id ... gdc_file_id md5sum</code>
 				</pre>
-				<p>
-					Match the dimensions and names of different matrices and data frames
+				<p class="notes">
+					It's important to always <strong>match the dimensions and names</strong> across all the matrices and data frames (<code>rowData</code> or <code>rowRanges</code>, <code>colData</code>, and <code>assay</code>)
 				</p>
 			</div>
 		</div>
+		<style>
+			#rna-summarizedexperiment .notes {
+				position: absolute;
+				right: 11.5rem;
+				bottom: 7rem;
+				width: 17rem;
+				font-size: 1rem;
+				line-height: 1.5;
+				margin: 0;
+				padding: 1em;
+				border: solid 2px var(--color-key);
+			}
+			#rna-summarizedexperiment .notes code {
+				font-size: 0.875rem;
+			}
+		</style>
 	</section>
 
 	<section id="prep-dna-methyl" class="slide tight">
@@ -1333,7 +1377,7 @@ colnames(mat) = rownames(dna_methyl_meta)</code>
 		</div>
 	</section>
 
-	<section id="dna-methyl-summarizedexperiment" class="slide tight">
+	<section id="dna-methyl-summarizedexperiment" class="slide">
 		<h2>DNA methyl's SummarizedExperiment</h2>
 		<div class="two columns">
 			<div>
@@ -1361,17 +1405,29 @@ dna_methyl |>
 				</pre>
 			</div>
 			<div>
-				<p>In the subsequent analyses, we just need these files:</p>
+				<p>We will just need the following files in our analysis later:</p>
 				<ol>
-					<li>SummarizedExperiment objects (RDS)</li>
-					<li>Sample information table (clinical data, classifications) (parquet)</li>
+					<li>SummarizedExperiment objects (<code>RDS</code>)</li>
+					<li>Sample information table (clinical data, classifications) (<code>parquet</code>)</li>
 				</ol>
-				<p>Refer to the slide notes and the full R Markdown notebooks for the complete steps</p>
 			</div>
+			<p class="notes">Refer to the slide notes and R Markdown notebooks in the <a href="https://github.com/ccwang002/2022Talk-genomics-heatmap">GitHub repo</a> for the complete steps of data processing and analysis</p>
 		</div>
 		<style>
-			#dna-methyl-summarizedexperiment :is(p, ol) {
+			#dna-methyl-summarizedexperiment :is(p:not(.notes), ol) {
 				font-size: 1.25rem;
+			}
+
+			#dna-methyl-summarizedexperiment .notes {
+				position: absolute;
+				right: 10rem;
+				bottom: 4rem;
+				width: 20rem;
+				font-size: 1rem;
+				line-height: 1.5;
+				margin: 0;
+				padding: 0.75em;
+				border: solid 2px var(--color-key);
 			}
 		</style>
 	</section>
@@ -1629,7 +1685,6 @@ draw(ht_list, merge_legends = TRUE)</code>
 			</pre>
 		</div>
 	</section>
-
 
 	<section id="data-overview-final" class="slide">
 		<div class="two columns">
