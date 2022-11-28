@@ -1451,7 +1451,7 @@ ggplot(plot_tbl, aes(x = sample, y = completeness)) +
 top_var_probe_ids = assay(dna_methyl) |> rowSds() |>
 	order(decreasing = TRUE) |> head(8000)
 dna_methyl = dna_methyl[top_var_probe_ids, ] |>
-	sort(ignore.strand = TRUE) </code>
+	sort(ignore.strand = TRUE)</code>
 			</pre>
 			<figure class="next">
 				<img class="fill w"
@@ -1654,14 +1654,62 @@ draw(ht_list, merge_legends = TRUE)</code>
 		</style>
 	</section>
 
+	<section id="data-overview-prep" class="slide">
+		<h2>Let's make a data overview heatmap</h2>
+		<div class="two columns l40">
+			<ol>
+				<li>Exclude the features on sex chromosomes (?)</li>
+				<li>Select top variable features</li>
+				<li>Normalize gene expression <br>(relative in[de]crease)</li>
+				<li>Include more sample annotations</li>
+			</ol>
+			<pre class="language-r dense next">
+<code># 1&amp;2. Subset/reorder/rename
+top_variable_genes = rna |>
+    subset(!seqnames %in% c("chrX", "chrY", "chrM"), ) |>
+    assay("tpm_unstranded") |>
+    rowSds() |>
+	order(decreasing = TRUE) |> head(2000)
+rna_top_var = rna[top_variable_genes, shared_samples]
+rownames(rna_top_var) = rowData(rna_top_var)$gene_name
+
+# 3. Normalize gene expression per gene/row
+assay(rna_top_var, "norm_expr") =
+	log2(assay(rna_top_var) + 1) |>
+    t() |>
+	scale(center = T, scale = T) |>
+	t()</code>
+			</pre>
+		</div>
+		<style>
+		</style>
+	</section>
+
 	<section id="data-overview-heatmap" class="slide tight wider">
-		<h2>Data overview heatmap</h2>
+		<h2>Let's make a data overview heatmap</h2>
 		<div class="two columns">
-			<div></div>
-			<figure>
+			<pre class="language-r dense">
+<code># Define shared color palettes
+my_colors = list(
+	rna = c(
+		"IDH mutant" = "#2A9C6A",
+		"Proneural" = "#EC6F95",
+		"Mesenchymal" = "#E8AB16",
+		"Classical"= "#23BFE8"
+	), ...
+)
+ha = rowAnnotation(
+	sex = anno_df$sex,
+	rna = anno_df$rna,
+	...
+	col = my_colors,
+    ...
+)</code>
+			</pre>
+			<figure class="next">
 				<img class="fill w"
 					src="pictures/demo_data_overview_heatmap.png"
-					alt="">
+					alt="Overview of the DNA methylation and gene expression landscape of our glioblastoma cohort.">
 			</figure>
 		</div>
 		<style>
@@ -1671,19 +1719,36 @@ draw(ht_list, merge_legends = TRUE)</code>
 		</style>
 	</section>
 
-	<!-- Two column template -->
-	<section class="slide tight">
-		<h2></h2>
-		<div class="two columns">
-			<pre class="language-r dense">
-<code>
-</code>
-			</pre>
-			<pre class="language-r dense">
-<code>
-</code>
-			</pre>
-		</div>
+	<section class="slide-notes" style="grid-row: span 2;">
+		<h3>Color palettes/mappings reuse</h3>
+		<p>While the color palettes/mappings <code>my_colors</code> can be reused easily in R by exporting it as a <code>RDS</code> file, it's not easy to use from a different language (Python)</p>
+		<pre class="language-r">
+<code># Convert list of color palettes/mappings to a data frame
+my_colors_tbl = my_colors |>
+    imap_dfr(function(palette, name) {
+        palette |>
+            enframe('label', 'color') |>
+            mutate(column = .env$name)
+    }) |>
+    select(column, label, color)
+# # A tibble: 17 × 3
+#   column     label       color
+#   &lt;chr&gt;      &lt;chr&gt;       &lt;chr&gt;
+# 1 sex        Female      #8700F9
+# 2 sex        Male        #00C4AA
+# 3 rna        IDH mutant  #2A9C6A
+# ...
+
+# Reconstruct the list of color palettes/mappings
+# from a exported data frame
+my_colors.recovered = my_colors_tbl |>
+    split(my_colors_tbl$column) |>
+    map(function(data_tbl) {
+        data_tbl |>
+            select(label, color) |>
+            deframe()
+    })</code>
+		</pre>
 	</section>
 
 	<section id="data-overview-final" class="slide">
