@@ -1,4 +1,5 @@
 Bioc
+BRCA
 cbind
 ccell
 ccwang
@@ -24,6 +25,7 @@ ggplot2
 ggrastr
 glioblastoma
 gpar
+gtrellis
 Gviz
 highlightjs
 Hsapiens
@@ -38,6 +40,7 @@ Mesenchymal
 methylation
 MGMT
 nrow
+OncoPrint
 omics
 pmap
 proteogenomics
