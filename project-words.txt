@@ -8,6 +8,7 @@ DALL
 deframe
 dend
 dendrogram
+dendrograms
 dplyr
 Ellisn
 ENSE
@@ -18,7 +19,9 @@ ENST
 Fira
 fleqn
 ggbio
+ggplot
 ggplot2
+ggrastr
 glioblastoma
 gpar
 Gviz
@@ -34,6 +37,7 @@ mcols
 Mesenchymal
 methylation
 MGMT
+nrow
 omics
 pmap
 proteogenomics
@@ -57,3 +61,4 @@ unstranded
 Vadim
 vals
 viridis
+XIST
