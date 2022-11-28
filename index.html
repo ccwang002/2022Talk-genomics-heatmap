@@ -855,28 +855,45 @@ my_tbl = my_DF |>
 		</ul>
 	</section>
 
-	<section id="genomics-data-vis" class="slide">
-		<ul>
-			<li>Gviz, ggbio</li>
-			<li>heatmap</li>
-			<li>
-		circos plot
-			</li>
-			<li>
-		rasterization
-			</li>
-		</ul>
-	</section>
-
-	<section id="complexheatmap" class="slide tight">
-		<h2>ComplexHeatmap: the ultimate way to make heatmaps</h2>
+	<section id="genomics-data-vis" class="slide wider tight">
+		<h2>Genomic data visualization</h2>
 		<div class="two columns">
 			<ul>
-				<li>Heatmap is a basic way to dump high dimensional data in one plot and identify large trends</li>
+				<li>
+					Plot annotations and data <strong>along a genome sequence</strong>:
+					<a href="https://bioconductor.org/packages/release/bioc/html/Gviz.html">Gviz</a>
+					and
+					<a href="https://bioconductor.org/packages/release/bioc/html/ggbio.html">ggbio</a>
+				</li>
+				<li>
+					<strong>Heatmaps</strong>, a basic/naive way to dump high dimensional data in one plot and identify large trends:
+					<a href="https://bioconductor.org/packages/release/bioc/html/ComplexHeatmap.html">ComplexHeatmap</a>
+				</li>
+				<li>
+					<strong>Circular plots</strong> (<a href="https://en.wikipedia.org/wiki/Chord_diagram_(information_visualization)">chord diagram</a>), inter-connections at a longer range:
+					<a href="https://jokergoo.github.io/circlize_book/book/">circlize</a>,
+					<a href="https://circos.ca">circos</a>
+				</li>
+				<li><strong>Rasterization</strong>: <a href="https://cran.r-project.org/package=ggrastr">ggrastr</a></li>
+			</ul>
+			<figure>
+				<img class="fill w"
+					src="pictures/gviz_seqdepth_demo.png"
+					alt="Gviz example showing RNA-seq read depth around the genomic region of gene BRCA1.">
+				<figcaption class="citation">A Gviz <a href="https://blog.liang2.tw/posts/2016/01/plot-seq-depth-gviz/">example</a> showing the RNA-seq read depth of a sample around the genomic region of gene BRCA1.</figcaption>
+			</figure>
+		</div>
+	</section>
+
+	<section id="complexheatmap" class="slide">
+		<h2>ComplexHeatmap</h2>
+		<div class="two columns">
+			<ul>
 				<li><a href="https://bioconductor.org/packages/release/bioc/html/ComplexHeatmap.html">ComplexHeatmap</a> is <strong>highly configurable</strong></li>
 				<li>Based on <a href="https://stat.ethz.ch/R-manual/R-devel/library/grid/html/grid-package.html">grid</a> graphics (check out <a href="https://www.stat.auckland.ac.nz/~paul/RG3e/">R Graphics, 3rd</a>)</li>
 				<li>User directly controls the underlying parameters by <code>gpar(...)</code> (unlike <a href="https://ggplot2.tidyverse.org/">ggplot2</a>)</li>
-				<li>We'll go through some examples from its <a href="https://jokergoo.github.io/ComplexHeatmap-reference/book/">guidebook</a></li>
+				<li class="next">Heatmap grids can even be customized to make other 2D plots like <a href="https://jokergoo.github.io/ComplexHeatmap-reference/book/upset-plot.html">UpSet plot</a> and <a href="https://jokergoo.github.io/ComplexHeatmap-reference/book/oncoprint.html">OncoPrint</a></li>
+				<li class="next">We'll go through some examples from its <a href="https://jokergoo.github.io/ComplexHeatmap-reference/book/">guidebook</a></li>
 			</ul>
 		<figure>
 			<img class="fill w"
@@ -898,7 +915,7 @@ my_tbl = my_DF |>
 		</style>
 	</section>
 
-	<section id="hello-heatmap" class="slide tight">
+	<section id="hello-heatmap" class="slide">
 		<h2>Hello, heatmap</h2>
 		<div class="two columns">
 			<pre class="language-r dense">
@@ -1018,12 +1035,12 @@ draw(ht, merge_legends = TRUE)</code>
 		</style>
 	</section>
 
-	<section id="heatmap-list" class="slide tight">
+	<section id="heatmap-list" class="slide">
 		<h2>Draw list of heatmaps and annotations</h2>
 		<div class="two columns r40">
 			<div>
 				<ul>
-					<li>Useful for combining heatmaps of different data types of the same sets of samples</li>
+					<li>Useful for <strong>combining heatmaps</strong> of different data types of the same sets of samples</li>
 					<li>Match the row/column names and orders</li>
 				</ul>
 				<pre class="language-r dense">
@@ -1686,7 +1703,7 @@ assay(rna_top_var, "norm_expr") =
 	</section>
 
 	<section id="data-overview-heatmap" class="slide tight wider">
-		<h2>Let's make a data overview heatmap</h2>
+		<h2>DNA methyl and gene expression landscape of our cohort</h2>
 		<div class="two columns">
 			<pre class="language-r dense">
 <code># Define shared color palettes
@@ -1709,10 +1726,13 @@ ha = rowAnnotation(
 			<figure class="next">
 				<img class="fill w"
 					src="pictures/demo_data_overview_heatmap.png"
-					alt="Overview of the DNA methylation and gene expression landscape of our glioblastoma cohort.">
+					alt="DNA methylation and gene expression landscape of our glioblastoma cohort.">
 			</figure>
 		</div>
 		<style>
+			#data-overview-heatmap h2 {
+				font-size: 2rem;
+			}
 			#data-overview-heatmap .columns {
 				grid-template-columns: 3fr 7fr;
 			}
@@ -1754,16 +1774,33 @@ my_colors.recovered = my_colors_tbl |>
 	<section id="data-overview-final" class="slide">
 		<div class="two columns">
 			<div>
-				<p>Final data overview figure in the <a href="https://doi.org/10.1016/j.ccell.2021.01.006">paper</a></p>
+				<h2>Tips for large heatmaps</h2>
+				<ul>
+					<li>Build individual blocks first</li>
+					<li>Check if all heatmaps and annotations are in the same order</li>
+					<li>Make heatmap settings reuseable or less automatic
+						(color palettes, gpar()s, and even dendrograms)</li>
+					<li>Configure the heatmap <a href="https://jokergoo.github.io/ComplexHeatmap-reference/book/a-single-heatmap.html#split-heatmap-annotations">rasterization</a></li>
+				</ul>
 			</div>
 			<div></div>
 		</div>
-		<img class="final-figure1 place right"
+		<figure class="final-figure1 place right center">
+			<img class="fill h"
 			src="pictures/cptac_gbm_figure1_data_overview.png"
 			alt="Data overview figure of the cptac glioblastoma cohort in the final publication in 2021">
+			<figcaption class="citation">Final data overview figure (Figure 1) in the <a href="https://doi.org/10.1016/j.ccell.2021.01.006">manuscript</a></figcaption>
+		</figure>
 		<style>
+			#data-overview-final h2 {
+				font-size: 2.5rem;
+			}
 			#data-overview-final .final-figure1 {
+				/* position: absolute; */
+				line-height: 1;
 				height: 450px;
+				right: 0.5rem;
+				/* bottom: 3rem; */
 			}
 		</style>
 	</section>
